@@ -1,0 +1,104 @@
+graceful_shutdown:
+  alias: Graceful Shutdown
+  sequence:
+  - service: shell_command.turn_off_teleprompter
+    data: {}
+  - service: shell_command.turn_off_desktop
+    data: {}
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 30
+      milliseconds: 0
+  - type: turn_off
+    device_id: e6c0bd9eee0e06f6559289735e4023fa
+    entity_id: switch.socket_attic_computers_socket_1
+    domain: switch
+  - type: turn_off
+    device_id: e657d58e621cbdd0dac25dd6cdc41ae8
+    entity_id: switch.socket_attic_monitors_socket_1
+    domain: switch
+  - type: turn_off
+    device_id: f3e198594acf64605ccc520ab7d74cf9
+    entity_id: switch.socket_attic_lamp_socket
+    domain: switch
+  mode: single
+  icon: mdi:power-plug-off
+shower_boost:
+  alias: Shower Boost
+  sequence:
+  - service: evohome.set_zone_override
+    data:
+      entity_id: climate.shower_room
+      setpoint: 21
+      duration:
+        minutes: 60
+  - service: water_heater.set_operation_mode
+    data:
+      entity_id: water_heater.dhw_controller
+      operation_mode: 'on'
+  mode: single
+  icon: mdi:shower-head
+ellys_room_boost:
+  alias: Elly's Room boost
+  sequence:
+  - service: evohome.set_zone_override
+    data:
+      entity_id: climate.elly_s_room
+      setpoint: 21
+      duration:
+        minutes: 90
+  mode: single
+  icon: mdi:bed
+gym_boost:
+  alias: Gym boost
+  sequence:
+  - service: evohome.set_zone_override
+    data:
+      entity_id: climate.gym
+      setpoint: 18
+      duration:
+        minutes: 60
+  mode: single
+  icon: mdi:weight-lifter
+laundry_boost:
+  alias: Laundry boost
+  sequence:
+  - service: evohome.set_zone_override
+    data:
+      entity_id: climate.laundry
+      setpoint: 21.5
+      duration:
+        minutes: 60
+  mode: single
+  icon: mdi:tumble-dryer
+attic_study_boost:
+  alias: Attic Study boost
+  sequence:
+  - service: evohome.set_zone_override
+    data:
+      entity_id: climate.attic_study
+      setpoint: 21
+      duration:
+        minutes: 90
+  mode: single
+  icon: mdi:chair-rolling
+bedtime:
+  alias: Bedtime
+  sequence:
+  - service: scene.turn_on
+    target:
+      entity_id: scene.night
+    metadata: {}
+  - type: turn_off
+    device_id: a80cbf08bb07c10bee409478d02663ac
+    entity_id: remote.43pus8517_12_remote
+    domain: remote
+  - service: script.graceful_shutdown
+    data: {}
+  mode: single
+  icon: mdi:bed
+
+dummy:
+  description: Does nothing
+  sequence: []

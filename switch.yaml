@@ -1,0 +1,33 @@
+- platform: template
+  switches:
+    blue_shell_climate:
+      friendly_name: Blue Shell Climate
+      icon_template: "mdi:fan"
+      value_template: "{{ is_state('climate.blue_shell_hvac_climate_system','heat_cool') }}"
+      turn_on:
+        - service: climate.turn_on
+          target: 
+            entity_id: climate.blue_shell_hvac_climate_system
+
+      turn_off:
+        - service: climate.turn_off
+          target: 
+            device_id: 5912382cb94176f76b594aa4d8945945
+
+    blue_shell_defrost:
+      friendly_name: Blue Shell Defrost
+      icon_template: "mdi:snowflake-melt"
+      value_template: "{{ is_state_attr('climate.blue_shell_hvac_climate_system','preset_mode','Defrost') }}"
+      turn_on:
+        - service: climate.set_preset_mode
+          target: 
+            entity_id: climate.blue_shell_hvac_climate_system
+          data:
+            preset_mode: Defrost
+      turn_off:
+        - service: climate.set_preset_mode
+          target: 
+            entity_id: climate.blue_shell_hvac_climate_system
+          data:
+            preset_mode: Normal    
+

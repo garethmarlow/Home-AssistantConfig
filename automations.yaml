@@ -1,0 +1,425 @@
+- id: '1674336743321'
+  alias: Stop Peak Rate Charging
+  description: ''
+  trigger:
+  - platform: device
+    type: turned_on
+    device_id: 5912382cb94176f76b594aa4d8945945
+    entity_id: switch.blue_shell_charger
+    domain: switch
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 0
+  condition:
+  - condition: device
+    device_id: 5912382cb94176f76b594aa4d8945945
+    domain: device_tracker
+    entity_id: device_tracker.blue_shell_location_tracker
+    type: is_home
+  - condition: time
+    after: 05:30:00
+    before: '23:30:00'
+  - type: is_off
+    condition: device
+    device_id: eededf10b60d7d71d55d94b2517eecfd
+    entity_id: binary_sensor.octopus_intelligent_slot
+    domain: binary_sensor
+  - condition: device
+    type: is_off
+    device_id: eededf10b60d7d71d55d94b2517eecfd
+    entity_id: switch.octopus_bump_charge
+    domain: switch
+  - condition: state
+    entity_id: binary_sensor.octopus_power_up_active
+    state: 'on'
+  action:
+  - type: turn_off
+    device_id: 5912382cb94176f76b594aa4d8945945
+    entity_id: switch.blue_shell_charger
+    domain: switch
+  mode: single
+- id: '1674341724733'
+  alias: Turn on car charger
+  description: To trigger Intelligent Octopus scheduling
+  trigger:
+  - platform: time
+    at: 00:15:00
+  condition:
+  - type: is_plugged_in
+    condition: device
+    device_id: 5912382cb94176f76b594aa4d8945945
+    entity_id: binary_sensor.blue_shell_charger
+    domain: binary_sensor
+  - condition: device
+    type: is_off
+    device_id: 5912382cb94176f76b594aa4d8945945
+    entity_id: switch.blue_shell_charger
+    domain: switch
+  action:
+  - service: switch.turn_on
+    data: {}
+    target:
+      entity_id: switch.blue_shell_charger
+  mode: single
+- id: '1675013546555'
+  alias: Reset chores
+  description: ''
+  trigger:
+  - platform: time
+    at: 00:05:00
+  condition: []
+  action:
+  - service: input_boolean.turn_off
+    data: {}
+    target:
+      entity_id:
+      - input_boolean.inhaler_am
+      - input_boolean.inhaler_pm
+      - input_boolean.dishwasher_am
+      - input_boolean.dishwasher_pm
+      - input_boolean.feed_tabby
+  mode: single
+- id: '1675013705155'
+  alias: Morning inhaler nag
+  description: ''
+  trigger:
+  - platform: time
+    at: 08:20:00
+  condition:
+  - condition: state
+    entity_id: input_boolean.inhaler_am
+    state: 'off'
+  action:
+  - service: notify.mobile_app_gareths_iphone
+    data:
+      message: Inhaler!
+  - service: notify.mobile_app_sulky_s_phone
+    data:
+      message: Inhaler!
+  mode: single
+- id: '1675013834785'
+  alias: Evening inhaler nag
+  description: ''
+  trigger:
+  - platform: time
+    at: '19:20:00'
+  condition:
+  - condition: state
+    entity_id: input_boolean.inhaler_pm
+    state: 'off'
+  action:
+  - service: notify.mobile_app_gareths_iphone
+    data:
+      message: Inhaler!
+  - service: notify.mobile_app_sulky_s_phone
+    data:
+      message: Inhaler!
+  mode: single
+- id: '1675016443917'
+  alias: Attic Power Toggle
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - input_boolean.attic_study_power
+  condition: []
+  action:
+  - if:
+    - condition: state
+      entity_id: input_boolean.attic_study_power
+      state: 'on'
+    then:
+    - service: scene.turn_on
+      target:
+        entity_id: scene.attic_on
+      metadata: {}
+    else:
+    - if:
+      - condition: state
+        entity_id: input_boolean.attic_study_power
+        state: 'off'
+      then:
+      - service: script.graceful_shutdown
+        data: {}
+  mode: single
+- id: '1675066470426'
+  alias: Nag dishwasher pm
+  description: ''
+  trigger:
+  - platform: time
+    at: '19:30:00'
+  condition:
+  - condition: state
+    entity_id: input_boolean.dishwasher_pm
+    state: 'off'
+  action:
+  - service: notify.mobile_app_gareths_iphone
+    data:
+      message: Load dishwasher
+  - service: notify.mobile_app_rorys_iphone
+    data:
+      message: Load dishwasher
+  mode: single
+- id: '1675066654286'
+  alias: Dishwasher nag am
+  description: ''
+  trigger:
+  - platform: time
+    at: 08:05:00
+  condition:
+  - condition: state
+    entity_id: input_boolean.dishwasher_am
+    state: 'off'
+  action:
+  - service: notify.mobile_app_gareths_iphone
+    data:
+      message: Empty dishwasher
+  - service: notify.mobile_app_rorys_iphone
+    data:
+      message: Empty dishwasher
+  mode: single
+- id: '1675066718506'
+  alias: Feed tabby nag
+  description: ''
+  trigger:
+  - platform: time
+    at: 08:05:00
+  condition:
+  - condition: state
+    state: 'off'
+    entity_id: input_boolean.feed_tabby
+  action:
+  - service: notify.mobile_app_gareths_iphone
+    data:
+      message: Feed Tabby
+  - service: notify.mobile_app_rorys_iphone
+    data:
+      message: Feed Tabby
+  mode: single
+- id: '1677542848958'
+  alias: Home Energy Carbon Split
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - sensor.home_energy
+  condition:
+  - condition: template
+    value_template: '{%- set delta = trigger.to_state.state | float - trigger.from_state.state
+      | float -%}
+
+      {{ delta > 0 }}'
+  action:
+  - service: input_number.set_value
+    data:
+      value: '{%- set delta = trigger.to_state.state | float - trigger.from_state.state
+        | float -%} {%- set current_energy = states("input_number.energy_fossil_home")
+        | float -%} {{ current_energy + delta * 0.01 * (states("sensor.co2_signal_grid_fossil_fuel_percentage")
+        | float)  }}'
+    target:
+      entity_id: input_number.energy_fossil_home
+  - service: input_number.set_value
+    data:
+      value: '{%- set delta = trigger.to_state.state | float - trigger.from_state.state
+        | float -%} {%- set current_energy = states("input_number.energy_low_carbon_home")
+        | float -%} {{ current_energy + delta * 0.01 * (100 - (states("sensor.co2_signal_grid_fossil_fuel_percentage")
+        | float))  }}'
+    target:
+      entity_id: input_number.energy_low_carbon_home
+  - service: input_number.set_value
+    data:
+      value: '{%- set delta = trigger.to_state.state | float - trigger.from_state.state
+        | float -%} {%- set current_carbon = states("input_number.carbon_footprint_home")
+        | float -%} {{ current_carbon + 0.001 * delta * (states("sensor.co2_signal_co2_intensity")
+        | float)  }}'
+    target:
+      entity_id: input_number.carbon_footprint_home
+  - service: input_number.set_value
+    data:
+      value: '{%- set delta = trigger.to_state.state | float - trigger.from_state.state
+        | float -%} {%- set current_cost = states("input_number.cost_home") | float
+        -%} {{ current_cost + delta * (states("sensor.octopus_energy_electricity_16p7133293_1012800425985_current_rate")
+        | float)  }}'
+    target:
+      entity_id: input_number.cost_home
+  - if:
+    - condition: state
+      entity_id: binary_sensor.octopus_intelligent_slot
+      state: 'on'
+    then:
+    - service: input_number.set_value
+      data:
+        value: '{%- set delta = trigger.to_state.state | float - trigger.from_state.state
+          | float -%} {%- set current_energy = states("input_number.home_off_peak_energy")
+          | float -%} {{ current_energy + delta }}'
+      target:
+        entity_id: input_number.home_off_peak_energy
+    - service: input_number.set_value
+      data:
+        value: '{%- set delta = trigger.to_state.state | float - trigger.from_state.state
+          | float -%} {%- set current_cost = states("input_number.home_off_peak_cost")
+          | float -%} {{ current_cost + delta * 0.075  }}'
+      target:
+        entity_id: input_number.home_off_peak_cost
+    else:
+    - service: input_number.set_value
+      data:
+        value: '{%- set delta = trigger.to_state.state | float - trigger.from_state.state
+          | float -%} {%- set current_energy = states("input_number.home_peak_energy")
+          | float -%} {{ current_energy + delta }}'
+      target:
+        entity_id: input_number.home_peak_energy
+    - service: input_number.set_value
+      data:
+        value: '{%- set delta = trigger.to_state.state | float - trigger.from_state.state
+          | float -%} {%- set current_cost = states("input_number.home_peak_cost")
+          | float -%} {{ current_cost + delta * 0.401  }}'
+      target:
+        entity_id: input_number.home_peak_cost
+  mode: single
+- id: '1680374296097'
+  alias: Home Internal Consumption Split
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - sensor.home_internal_consumption
+  condition: []
+  action:
+  - service: input_number.set_value
+    data:
+      value: '{%- set delta = trigger.to_state.state | float - trigger.from_state.state
+        | float -%}  {%- set current_internal = states("input_number.home_internal_consumption")
+        | float -%}  {%- if delta > 0 -%} {{ current_internal + delta  }} {%- else
+        -%} {{ current_internal }} {%- endif -%}'
+    target:
+      entity_id: input_number.home_internal_consumption
+  - service: input_number.set_value
+    data:
+      value: '{%- set delta = trigger.to_state.state | float - trigger.from_state.state
+        | float -%} {%- set current_carbon = states("input_number.home_shadow_carbon_footprint")
+        | float -%}  {%- if delta > 0 -%} {{ current_carbon + 0.001 * delta * (states("sensor.co2_signal_co2_intensity")
+        | float)  }} {%- else -%} {{ current_carbon }} {%- endif -%}'
+    target:
+      entity_id: input_number.home_shadow_carbon_footprint
+  - service: input_number.set_value
+    data:
+      value: '{%- set delta = trigger.to_state.state | float - trigger.from_state.state
+        | float -%} {%- set current_cost = states("input_number.home_shadow_cost")
+        | float -%} {%- if delta > 0 -%} {{ current_cost + delta * (states("sensor.octopus_energy_electricity_16p7133293_1012800425985_current_rate")
+        | float)  }} {%- else -%} {{ current_cost }} {%- endif -%}'
+    target:
+      entity_id: input_number.home_shadow_cost
+  mode: single
+- id: '1697985195881'
+  alias: Tumble Dryer power activity
+  description: Monitors tumble dryer status
+  use_blueprint:
+    path: leofabri/appliance-status-monitor.yaml
+    input:
+      appliance_socket: switch.tumble_dryer
+      appliance_power_sensor: sensor.tumble_dryer_current_power
+      appliance_state_machine: input_select.tumble_dryer_state_machine
+      appliance_job_cycle: input_boolean.tumble_dryer_job_cycle
+      delayed_job_completion_timer: timer.tumble_dryer_delayed_job_completion_timer
+      automation_self_trigger: input_boolean.tumble_dryer_automation_self_trigger
+      delayed_job_completion_duration: 0
+      appliance_finishing_power_threshold: 1
+- id: '1697985676135'
+  alias: Air Fryer power activity
+  description: ''
+  use_blueprint:
+    path: leofabri/appliance-status-monitor.yaml
+    input:
+      appliance_socket: switch.misc
+      appliance_power_sensor: sensor.misc_current_power
+      appliance_state_machine: input_select.air_fryer_state_machine
+      appliance_job_cycle: input_boolean.air_fryer_job_cycle
+      delayed_job_completion_timer: timer.air_fryer_delayed_job_completion_timer
+      automation_self_trigger: input_boolean.air_fryer_automation_self_trigger
+      delayed_job_completion_duration: 60
+- id: '1697985837628'
+  alias: Dishwasher power activity
+  description: ''
+  use_blueprint:
+    path: leofabri/appliance-status-monitor.yaml
+    input:
+      appliance_socket: switch.dishwasher
+      appliance_power_sensor: sensor.dishwasher_current_power
+      appliance_state_machine: input_select.dishwasher_state_machine
+      appliance_job_cycle: input_boolean.dishwasher_job_cycle
+      delayed_job_completion_timer: timer.dishwasher_delayed_job_completion_timer
+      automation_self_trigger: input_boolean.dishwasher_automation_self_trigger
+      delayed_job_completion_duration: 0
+      appliance_finishing_power_threshold: 1
+- id: '1697985955021'
+  alias: Washing Machine power activity
+  description: ''
+  use_blueprint:
+    path: leofabri/appliance-status-monitor.yaml
+    input:
+      appliance_socket: switch.washing_machine
+      appliance_power_sensor: sensor.washing_machine_current_power
+      appliance_state_machine: input_select.washing_machine_state_machine
+      appliance_job_cycle: input_boolean.washing_machine_job_cycle
+      delayed_job_completion_timer: timer.washing_machine_delayed_job_completion_timer
+      automation_self_trigger: input_boolean.washing_machine_automation_self_trigger
+      delayed_job_completion_duration: 0
+- id: '1697987944677'
+  alias: Cooker power activity
+  description: ''
+  use_blueprint:
+    path: leofabri/appliance-status-monitor.yaml
+    input:
+      appliance_socket: switch.dishwasher
+      appliance_power_sensor: sensor.cooker_3_1min
+      appliance_job_cycle: input_boolean.cooker_job_cycle
+      appliance_state_machine: input_select.cooker_state_machine
+      delayed_job_completion_timer: timer.cooker_delayed_job_completion_timer
+      automation_self_trigger: input_boolean.cooker_automation_self_trigger
+      delayed_job_completion_duration: 0
+- id: '1698102982015'
+  alias: Sync lava lamp with sofa front lamp
+  description: ''
+  trigger:
+  - platform: device
+    type: changed_states
+    device_id: d05c9d2507155da9b10ad8b4141a1ed7
+    entity_id: 4ebcc930d5f2e6209ed303eef5e698ed
+    domain: light
+  condition: []
+  action:
+  - if:
+    - condition: device
+      type: is_off
+      device_id: d05c9d2507155da9b10ad8b4141a1ed7
+      entity_id: 4ebcc930d5f2e6209ed303eef5e698ed
+      domain: light
+    then:
+    - service: switch.turn_off
+      data: {}
+      target:
+        entity_id: switch.charging_socket
+    else:
+    - service: switch.turn_on
+      data: {}
+      target:
+        entity_id: switch.charging_socket
+  mode: single
+- id: '1698274812007'
+  alias: Reload Emporia Vue
+  description: If the cooker real-time power sensor goes offline, reload the Emporia
+    Vue configuration
+  trigger:
+  - platform: state
+    entity_id:
+    - sensor.cooker_3_1min
+    to: unavailable
+  condition: []
+  action:
+  - service: homeassistant.reload_config_entry
+    data: {}
+    target:
+      device_id: 7b65104762e00030c99ffba8adb37c59
+  mode: single

@@ -1,0 +1,581 @@
+- id: '1674727862547'
+  name: Attic On
+  entities:
+    switch.socket_attic_computers_socket_1:
+      device_class: outlet
+      friendly_name: Socket Attic Computers Socket 1
+      state: 'on'
+    switch.socket_attic_monitors_socket_1:
+      device_class: outlet
+      friendly_name: Socket Attic Monitors Socket 1
+      state: 'on'
+    switch.socket_attic_lamp_socket:
+      device_class: outlet
+      friendly_name: Socket Attic Lamp Socket
+      state: 'on'
+  icon: mdi:power-plug
+  metadata: {}
+- id: '1675642412440'
+  name: Breakfast
+  entities:
+    light.kitchen:
+      supported_color_modes:
+      - brightness
+      color_mode: brightness
+      brightness: 255
+      is_hue_group: true
+      hue_scenes:
+      - Arctic aurora
+      - Tropical twilight
+      - Read
+      - Spring blossom
+      - Savanna sunset
+      - Nightlight
+      - Bright
+      - Concentrate
+      - Dimmed
+      - Relax
+      - Energize
+      hue_type: room
+      lights:
+      - Kitchen Table
+      - Dresser Lamp
+      dynamics: false
+      icon: mdi:lightbulb-group
+      friendly_name: Kitchen
+      supported_features: 40
+      state: 'on'
+    light.living_room:
+      min_color_temp_kelvin: 2000
+      max_color_temp_kelvin: 6535
+      min_mireds: 153
+      max_mireds: 500
+      supported_color_modes:
+      - color_temp
+      - xy
+      is_hue_group: true
+      hue_scenes:
+      - Arctic aurora
+      - Tropical twilight
+      - Read
+      - Spring blossom
+      - Savanna sunset
+      - Concentrate
+      - Bright
+      - Nightlight
+      - Relax
+      - Dimmed
+      - Energize
+      - Intermediate
+      hue_type: room
+      lights:
+      - Piano Lamp
+      - Sofa Front
+      - Sofa Rear
+      dynamics: false
+      icon: mdi:lightbulb-group
+      friendly_name: Living Room
+      supported_features: 40
+      color_mode: color_temp
+      brightness: 51
+      color_temp_kelvin: 2732
+      color_temp: 366
+      hs_color:
+      - 28.327
+      - 64.71
+      rgb_color:
+      - 255
+      - 167
+      - 89
+      xy_color:
+      - 0.524
+      - 0.387
+      state: 'on'
+    light.common_area_lights:
+      min_color_temp_kelvin: 2000
+      max_color_temp_kelvin: 6535
+      min_mireds: 153
+      max_mireds: 500
+      effect_list:
+      - None
+      - candle
+      supported_color_modes:
+      - brightness
+      - color_temp
+      - hs
+      color_mode: brightness
+      brightness: 255
+      effect: None
+      entity_id:
+      - light.hall_lamp
+      - light.landing_light
+      - light.top_floor_landing
+      icon: mdi:lightbulb-group
+      friendly_name: Common Area Lights
+      supported_features: 44
+      state: 'on'
+  icon: mdi:weather-sunset-up
+  metadata:
+    light.kitchen:
+      entity_only: true
+    light.living_room:
+      entity_only: true
+    light.common_area_lights:
+      entity_only: true
+- id: '1675642649050'
+  name: Daytime
+  entities:
+    light.kitchen:
+      supported_color_modes:
+      - brightness
+      is_hue_group: true
+      hue_scenes:
+      - Arctic aurora
+      - Tropical twilight
+      - Read
+      - Spring blossom
+      - Savanna sunset
+      - Nightlight
+      - Bright
+      - Concentrate
+      - Dimmed
+      - Relax
+      - Energize
+      hue_type: room
+      lights:
+      - Kitchen Table
+      - Dresser Lamp
+      dynamics: false
+      icon: mdi:lightbulb-group
+      friendly_name: Kitchen
+      supported_features: 40
+      state: 'off'
+    light.common_area_lights:
+      min_color_temp_kelvin: 2000
+      max_color_temp_kelvin: 6535
+      min_mireds: 153
+      max_mireds: 500
+      effect_list:
+      - None
+      - candle
+      supported_color_modes:
+      - brightness
+      - color_temp
+      - hs
+      entity_id:
+      - light.hall_lamp
+      - light.landing_light
+      - light.top_floor_landing
+      icon: mdi:lightbulb-group
+      friendly_name: Common Area Lights
+      supported_features: 44
+      state: 'off'
+    light.living_room:
+      min_color_temp_kelvin: 2000
+      max_color_temp_kelvin: 6535
+      min_mireds: 153
+      max_mireds: 500
+      supported_color_modes:
+      - color_temp
+      - xy
+      is_hue_group: true
+      hue_scenes:
+      - Arctic aurora
+      - Tropical twilight
+      - Read
+      - Spring blossom
+      - Savanna sunset
+      - Concentrate
+      - Bright
+      - Nightlight
+      - Relax
+      - Dimmed
+      - Energize
+      - Intermediate
+      hue_type: room
+      lights:
+      - Piano Lamp
+      - Sofa Front
+      - Sofa Rear
+      dynamics: false
+      icon: mdi:lightbulb-group
+      friendly_name: Living Room
+      supported_features: 40
+      state: 'off'
+    light.daniels_bedroom:
+      supported_color_modes:
+      - brightness
+      is_hue_group: true
+      hue_scenes: []
+      hue_type: room
+      lights:
+      - Daniel’s Light
+      dynamics: false
+      icon: mdi:lightbulb-group
+      friendly_name: Daniel’s Room
+      supported_features: 40
+      state: 'off'
+    light.rorys_room:
+      supported_color_modes:
+      - brightness
+      is_hue_group: true
+      hue_scenes: []
+      hue_type: room
+      lights:
+      - Rory’s Light
+      dynamics: false
+      icon: mdi:lightbulb-group
+      friendly_name: Rory’s Room
+      supported_features: 40
+      state: 'off'
+  icon: mdi:rabbit-variant
+  metadata:
+    light.kitchen:
+      entity_only: true
+    light.common_area_lights:
+      entity_only: true
+    light.living_room:
+      entity_only: true
+    light.daniels_bedroom:
+      entity_only: true
+    light.rorys_room:
+      entity_only: true
+- id: '1675642797152'
+  name: Getting Dark
+  entities:
+    light.kitchen:
+      supported_color_modes:
+      - brightness
+      is_hue_group: true
+      hue_scenes:
+      - Arctic aurora
+      - Tropical twilight
+      - Read
+      - Spring blossom
+      - Savanna sunset
+      - Nightlight
+      - Bright
+      - Concentrate
+      - Dimmed
+      - Relax
+      - Energize
+      hue_type: room
+      lights:
+      - Kitchen Table
+      - Dresser Lamp
+      dynamics: false
+      icon: mdi:lightbulb-group
+      friendly_name: Kitchen
+      supported_features: 40
+      color_mode: brightness
+      brightness: 102
+      state: 'on'
+    light.living_room:
+      min_color_temp_kelvin: 2000
+      max_color_temp_kelvin: 6535
+      min_mireds: 153
+      max_mireds: 500
+      supported_color_modes:
+      - color_temp
+      - xy
+      is_hue_group: true
+      hue_scenes:
+      - Arctic aurora
+      - Tropical twilight
+      - Read
+      - Spring blossom
+      - Savanna sunset
+      - Concentrate
+      - Bright
+      - Nightlight
+      - Relax
+      - Dimmed
+      - Energize
+      - Intermediate
+      hue_type: room
+      lights:
+      - Piano Lamp
+      - Sofa Front
+      - Sofa Rear
+      dynamics: false
+      icon: mdi:lightbulb-group
+      friendly_name: Living Room
+      supported_features: 40
+      color_mode: color_temp
+      brightness: 102
+      color_temp_kelvin: 2732
+      color_temp: 366
+      hs_color:
+      - 28.327
+      - 64.71
+      rgb_color:
+      - 255
+      - 167
+      - 89
+      xy_color:
+      - 0.524
+      - 0.387
+      state: 'on'
+    light.common_area_lights:
+      min_color_temp_kelvin: 2000
+      max_color_temp_kelvin: 6535
+      min_mireds: 153
+      max_mireds: 500
+      effect_list:
+      - None
+      - candle
+      supported_color_modes:
+      - brightness
+      - color_temp
+      - hs
+      entity_id:
+      - light.hall_lamp
+      - light.landing_light
+      - light.top_floor_landing
+      icon: mdi:lightbulb-group
+      friendly_name: Common Area Lights
+      supported_features: 44
+      color_mode: brightness
+      brightness: 102
+      effect: None
+      state: 'on'
+  icon: mdi:theme-light-dark
+  metadata:
+    light.kitchen:
+      entity_only: true
+    light.living_room:
+      entity_only: true
+    light.common_area_lights:
+      entity_only: true
+- id: '1675642888418'
+  name: Dinner Time
+  entities:
+    light.kitchen:
+      supported_color_modes:
+      - brightness
+      is_hue_group: true
+      hue_scenes:
+      - Arctic aurora
+      - Tropical twilight
+      - Read
+      - Spring blossom
+      - Savanna sunset
+      - Nightlight
+      - Bright
+      - Concentrate
+      - Dimmed
+      - Relax
+      - Energize
+      hue_type: room
+      lights:
+      - Kitchen Table
+      - Dresser Lamp
+      dynamics: false
+      icon: mdi:lightbulb-group
+      friendly_name: Kitchen
+      supported_features: 40
+      color_mode: brightness
+      brightness: 255
+      state: 'on'
+  icon: mdi:food-turkey
+  metadata:
+    light.kitchen:
+      entity_only: true
+- id: '1675643030900'
+  name: Evening
+  entities:
+    light.kitchen:
+      supported_color_modes:
+      - brightness
+      is_hue_group: true
+      hue_scenes:
+      - Arctic aurora
+      - Tropical twilight
+      - Read
+      - Spring blossom
+      - Savanna sunset
+      - Nightlight
+      - Bright
+      - Concentrate
+      - Dimmed
+      - Relax
+      - Energize
+      hue_type: room
+      lights:
+      - Kitchen Table
+      - Dresser Lamp
+      dynamics: false
+      icon: mdi:lightbulb-group
+      friendly_name: Kitchen
+      supported_features: 40
+      color_mode: brightness
+      brightness: 76
+      state: 'on'
+    light.living_room:
+      min_color_temp_kelvin: 2000
+      max_color_temp_kelvin: 6535
+      min_mireds: 153
+      max_mireds: 500
+      supported_color_modes:
+      - color_temp
+      - xy
+      is_hue_group: true
+      hue_scenes:
+      - Arctic aurora
+      - Tropical twilight
+      - Read
+      - Spring blossom
+      - Savanna sunset
+      - Concentrate
+      - Bright
+      - Nightlight
+      - Relax
+      - Dimmed
+      - Energize
+      - Intermediate
+      hue_type: room
+      lights:
+      - Piano Lamp
+      - Sofa Front
+      - Sofa Rear
+      dynamics: false
+      icon: mdi:lightbulb-group
+      friendly_name: Living Room
+      supported_features: 40
+      color_mode: color_temp
+      brightness: 76
+      color_temp_kelvin: 2732
+      color_temp: 366
+      hs_color:
+      - 28.327
+      - 64.71
+      rgb_color:
+      - 255
+      - 167
+      - 89
+      xy_color:
+      - 0.524
+      - 0.387
+      state: 'on'
+    light.common_area_lights:
+      min_color_temp_kelvin: 2000
+      max_color_temp_kelvin: 6535
+      min_mireds: 153
+      max_mireds: 500
+      effect_list:
+      - None
+      - candle
+      supported_color_modes:
+      - brightness
+      - color_temp
+      - hs
+      entity_id:
+      - light.hall_lamp
+      - light.landing_light
+      - light.top_floor_landing
+      icon: mdi:lightbulb-group
+      friendly_name: Common Area Lights
+      supported_features: 44
+      color_mode: brightness
+      brightness: 255
+      effect: None
+      state: 'on'
+  metadata:
+    light.kitchen:
+      entity_only: true
+    light.living_room:
+      entity_only: true
+    light.common_area_lights:
+      entity_only: true
+  icon: mdi:weather-night
+- id: '1675643121694'
+  name: Night
+  entities:
+    light.kitchen:
+      supported_color_modes:
+      - brightness
+      is_hue_group: true
+      hue_scenes:
+      - Arctic aurora
+      - Tropical twilight
+      - Read
+      - Spring blossom
+      - Savanna sunset
+      - Nightlight
+      - Bright
+      - Concentrate
+      - Dimmed
+      - Relax
+      - Energize
+      hue_type: room
+      lights:
+      - Kitchen Table
+      - Dresser Lamp
+      dynamics: false
+      icon: mdi:lightbulb-group
+      friendly_name: Kitchen
+      supported_features: 40
+      state: 'off'
+    light.living_room:
+      min_color_temp_kelvin: 2000
+      max_color_temp_kelvin: 6535
+      min_mireds: 153
+      max_mireds: 500
+      supported_color_modes:
+      - color_temp
+      - xy
+      is_hue_group: true
+      hue_scenes:
+      - Arctic aurora
+      - Tropical twilight
+      - Read
+      - Spring blossom
+      - Savanna sunset
+      - Concentrate
+      - Bright
+      - Nightlight
+      - Relax
+      - Dimmed
+      - Energize
+      - Intermediate
+      hue_type: room
+      lights:
+      - Piano Lamp
+      - Sofa Front
+      - Sofa Rear
+      dynamics: false
+      icon: mdi:lightbulb-group
+      friendly_name: Living Room
+      supported_features: 40
+      state: 'off'
+    light.common_area_lights:
+      min_color_temp_kelvin: 2000
+      max_color_temp_kelvin: 6535
+      min_mireds: 153
+      max_mireds: 500
+      effect_list:
+      - None
+      - candle
+      supported_color_modes:
+      - brightness
+      - color_temp
+      - hs
+      entity_id:
+      - light.hall_lamp
+      - light.landing_light
+      - light.top_floor_landing
+      icon: mdi:lightbulb-group
+      friendly_name: Common Area Lights
+      supported_features: 44
+      color_mode: brightness
+      brightness: 26
+      effect: None
+      state: 'on'
+  metadata:
+    light.kitchen:
+      entity_only: true
+    light.living_room:
+      entity_only: true
+    light.common_area_lights:
+      entity_only: true
+  icon: mdi:weather-night

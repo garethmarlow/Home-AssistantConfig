@@ -1,0 +1,29 @@
+energy_fossil_home:
+  name: Home Fossil Energy
+  min: 0
+  max: 1000000
+  step: 0.001
+  unit_of_measurement: kWh
+  mode: box
+
+energy_low_carbon_home:
+  name: Home Low Carbon Energy
+  min: 0
+  max: 1000000
+  step: 0.001
+  unit_of_measurement: kWh
+  mode: box
+
+carbon_footprint_home:
+  name: Home Carbon Footprint
+  min: 0
+  max: 200000000
+  unit_of_measurement: kgCO2eq
+  mode: box
+
+cost_home:
+  name: Home Cost
+  min: 0
+  max: 1000000
+  unit_of_measurement: GBP
+  mode: box

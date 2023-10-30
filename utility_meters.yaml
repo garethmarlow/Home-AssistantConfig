@@ -1,0 +1,27 @@
+daily_pv1_sum:
+  source: sensor.pv1_sum
+  cycle: daily
+
+daily_pv2_sum:
+  source: sensor.pv2_sum
+  cycle: daily
+
+daily_grid_consumption:
+  source: sensor.home_electricity_import_meter
+  cycle: daily
+
+home_energy_daily:
+  source: sensor.home_energy
+  cycle: daily
+
+home_energy_clean_daily:
+  source: sensor.home_energy_clean
+  cycle: daily
+
+home_energy_dirty_daily:
+  source: sensor.home_energy_dirty
+  cycle: daily
+
+home_gas_daily:
+  source: sensor.home_gas_consumption_cleaned
+  cycle: daily

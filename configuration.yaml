@@ -1,0 +1,132 @@
+# Loads default set of integrations. Do not remove.
+default_config:
+
+homeassistant:
+  customize: !include customize.yaml
+  packages: !include_dir_named packages
+
+# Load frontend themes from the themes folder
+frontend:
+  themes: !include_dir_merge_named themes
+
+# Text to speech
+tts:
+  - platform: google_translate
+
+automation: !include automations.yaml
+
+script: !include scripts.yaml
+scene: !include scenes.yaml
+mqtt: !include mqtt.yaml
+shell_command: !include shell_commands.yaml
+template: !include templates.yaml
+zone: !include zone.yaml
+sensor: !include sensors.yaml
+switch: !include switch.yaml
+# device_tracker: !include device_tracker.yaml
+calendar: !include calendars.yaml
+input_number: !include input_numbers.yaml
+utility_meter: !include utility_meters.yaml
+
+
+lovelace:
+  mode: yaml
+  resources:
+    - url: /hacsfiles/vertical-stack-in-card/vertical-stack-in-card.js
+      type: module
+    - url: /hacsfiles/lovelace-auto-entities/auto-entities.js
+      type: module
+    - url: /hacsfiles/button-card/button-card.js
+      type: module
+    - url: /hacsfiles/lovelace-mushroom/mushroom.js
+      type: module
+    - url: /hacsfiles/lovelace-layout-card/layout-card.js
+      type: module
+    - url: /hacsfiles/lovelace-card-mod/card-mod.js
+      type: module
+    - url: /hacsfiles/lovelace-digital-clock/digital-clock.js
+      type: module
+    - url: /hacsfiles/lovelace-wallpanel/wallpanel.js
+      type: module
+    - url: /hacsfiles/bignumber-card/bignumber-card.js
+      type: module
+    - url: /hacsfiles/atomic-calendar-revive/atomic-calendar-revive.js 
+      type: module
+    - url: /hacsfiles/battery-state-card/battery-state-card.js 
+      type: module
+    - url: /hacsfiles/lovelace-hourly-weather/hourly-weather.js 
+      type: module
+    - url: /hacsfiles/weather-card/weather-card.js 
+      type: module
+    - url: /hacsfiles/stack-in-card/stack-in-card.js
+      type: module
+    - url: /hacsfiles/Homekit-panel-card/homekit-panel-card.js
+      type: module
+    - url: /hacsfiles/ha-sankey-chart/ha-sankey-chart.js
+      type: module
+    - url: /hacsfiles/weather-radar-card/weather-radar-card.js 
+      type: module
+    - url: /hacsfiles/apexcharts-card/apexcharts-card.js
+      type: module
+    - url: /hacsfiles/lovelace-template-entity-row/template-entity-row.js 
+      type: module
+    - url: /hacsfiles/html-template-card/html-template-card.js
+      type: module
+    - url: /hacsfiles/icloud3/icloud3-event-log-card.js
+      type: module
+    - url: /hacsfiles/foxess-modbus-charge-period-card.js
+      type: module
+    - url: /hacsfiles/history-explorer-card/history-explorer-card.js 
+      type: module
+    - url: /hacsfiles/clock-weather-card/clock-weather-card.js
+      type: module
+    - url: /hacsfiles/flex-table-card/flex-table-card.js
+      type: module
+    - url: /hacsfiles/gauge-card/gauge-card.js
+      type: module
+    - url: /hacsfiles/bar-card/bar-card.js
+      type: module
+
+  # Add extra yaml dashboards
+  dashboards:
+    lovelace-panel:
+      mode: yaml
+      title: Panel
+      icon: mdi:tablet
+      show_in_sidebar: true
+      filename: ui-panel.yaml
+
+http:
+  use_x_forwarded_for: true
+  trusted_proxies: 192.168.1.5
+
+recorder:
+  exclude:
+    entities:
+      - sensor.icloud3_event_log
+
+waste_collection_schedule:
+  sources:
+    - name: cambridge_gov_uk
+      args:
+        post_code: CB43SB
+        number: 119
+
+evohome:
+  username: !secret evohome_username
+  password: !secret evohome_password
+
+logger:
+  default: warning
+  logs:
+#    custom_components.foxess: debug
+    homeassistant.components.mqtt.sensor: error
+    homeassistant.components.songpal.media_player: error
+    
+
+device_tracker:
+  - platform: icloud3
+    username: !secret icloud3_username
+    password: !secret icloud3_password
+
+

@@ -1,0 +1,11 @@
+wallpanel:
+  enabled: false
+  hide_toolbar: true
+  hide_sidebar: true
+  fullscreen: true
+  idle_time: 0
+views:
+  - !include ui-panel/01-main.yaml
+  - !include ui-panel/02-power.yaml
+  - !include ui-panel/03-battery.yaml
+  - !include ui-panel/04-switches.yaml

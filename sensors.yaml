@@ -1,0 +1,10 @@
+  - platform: waste_collection_schedule
+    name: Next Bin Collection
+    value_template: '{% if value.daysTo == 0 %}Today{% elif value.daysTo == 1 %}Tomorrow{% else %}{{value.date.strftime("%A")}}{% endif %}|{{value.types[0]}}|{{value.types[1]}}'
+
+  - platform: foxess
+    username: !secret foxess_username
+    password: !secret foxess_password
+    deviceID: !secret foxess_deviceid
+
+

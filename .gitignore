@@ -1,0 +1,8 @@
+*
+!*.yaml
+!scenes
+!.gitignore
+config_ic3.yaml
+device_tracker.yaml
+secrets.yaml
+known_devices.yaml

@@ -1,0 +1,66 @@
+sensor:
+  - name: "Home Instant Electricity"
+    state_topic: "SMART/HILD/84F3EB17FDAE"
+    unit_of_measurement: 'W'
+    unique_id: home_instant_electricity
+    value_template: "{{ value_json['elecMtr']['0702']['04']['00']|int(base=16) }}"
+    icon: 'mdi:flash'
+
+  - name: "Home Gas"
+    state_topic: "SMART/HILD/84F3EB17FDAE"
+    unit_of_measurement: 'kWh'
+    unique_id: home_gas
+    value_template: "{{ value_json['gasMtr']['0702']['00']['00']|int(base=16) * value_json['gasMtr']['0702']['03']['01']|int(base=16) / value_json['gasMtr']['0702']['03']['02']|int(base=16) }}"
+    icon: 'mdi:flash'
+
+#   - name: "Home Electricity Import Meter"
+#     state_topic: "SMART/HILD/84F3EB17FDAE"
+# #    last_reset_topic: "SMART/HILD/84F3EB17FDAE"
+#     last_reset_value_template: homeassistant.util.dt.utc_from_timestamp(0)
+#     unit_of_measurement: 'kWh'
+#     device_class: energy
+#     state_class: total_increasing
+#     unique_id: home_electrity_import
+#     value_template: >-
+#       {% if (value_json['elecMtr']['0702']['00']['00']|int(base=16) * value_json['elecMtr']['0702']['03']['01']|int(base=16) / value_json['elecMtr']['0702']['03']['02']|int(base=16) > 54000) and (value_json['elecMtr']['0702']['00']['00']|int(base=16) * value_json['elecMtr']['0702']['03']['01']|int(base=16) / value_json['elecMtr']['0702']['03']['02']|int(base=16) < 60000) %}
+#       {{ value_json['elecMtr']['0702']['00']['00']|int(base=16) * value_json['elecMtr']['0702']['03']['01']|int(base=16) / value_json['elecMtr']['0702']['03']['02']|int(base=16) }}
+#       {%- else -%}
+#       {{ states("sensor.home_electricity_import_meter") }}
+#       {% endif %}
+#     icon: 'mdi:counter'
+
+  - name: "Home Electricity Export Meter"
+    state_topic: "SMART/HILD/84F3EB17FDAE"
+#    last_reset_topic: "SMART/HILD/84F3EB17FDAE"
+    last_reset_value_template: homeassistant.util.dt.utc_from_timestamp(0)
+    unit_of_measurement: 'kWh'
+    device_class: energy
+    state_class: total_increasing
+    unique_id: home_electrity_export
+    icon: 'mdi:counter'
+    value_template: "{{ (value_json['elecMtr']['0702']['00']['01']|int(base=16) * value_json['elecMtr']['0702']['03']['01']|int(base=16) / value_json['elecMtr']['0702']['03']['02']|int(base=16)) }}"
+  
+  - name: "Home Gas Meter"
+    state_topic: "SMART/HILD/84F3EB17FDAE"
+#    last_reset_topic: "SMART/HILD/84F3EB17FDAE"
+    last_reset_value_template: homeassistant.util.dt.utc_from_timestamp(0)
+    unit_of_measurement: 'kWh'
+    value_template: "{{ value_json['gasMtr']['0702']['00']['00']|int(base=16) * value_json['gasMtr']['0702']['03']['01']|int(base=16) / value_json['gasMtr']['0702']['03']['02']|int(base=16) }}"
+    icon: 'mdi:counter'
+    device_class: gas
+    unique_id: home_gas_meter
+    state_class: total_increasing
+
+  - name: "Home Gas Consumption cleaned"
+    state_topic: "SMART/HILD/84F3EB17FDAE"
+    unit_of_measurement: 'kWh'
+    value_template: >-
+      {% if value_json['gasMtr']['0702']['00']['00']|int(base=16) * value_json['gasMtr']['0702']['03']['01']|int(base=16) / value_json['gasMtr']['0702']['03']['02']|int(base=16) | float(0) > 91000 %}
+      {{ value_json['gasMtr']['0702']['00']['00']|int(base=16) * value_json['gasMtr']['0702']['03']['01']|int(base=16) / value_json['gasMtr']['0702']['03']['02']|int(base=16) }}
+      {%- else -%}
+      {{ states("sensor.home_gas_comsumption_cleaned_m3") }}
+      {% endif %}
+    icon: 'mdi:counter'
+    unique_id: home_gas_cleaned
+    device_class: gas
+    state_class: total_increasing

@@ -1,0 +1,36 @@
+person.gareth_marlow:
+  friendly_name: GM
+person.nessa_marlow:
+  friendly_name: NM
+person.rory_marlow:
+  friendly_name: RM
+person.daniel_marlow:
+  friendly_name: DM
+device_tracker.blue_shell_location_tracker:
+  friendly_name: Car
+sensor.downstairs_lights_5_1d:
+  friendly_name: Downstairs
+sensor.kitchen_lights_11_1d:
+  friendly_name: Kitchen
+sensor.upstairs_lights_10_1d:
+  friendly_name: Upstairs
+sensor.attic_sockets_9_1d:
+  friendly_name: Attic Study
+sensor.bedrooms_7_1d:
+  friendly_name: Kids PCs
+sensor.study_sockets_8_1d:
+  friendly_name: PS5
+sensor.living_room_2_1d:
+  friendly_name: Living Room
+sensor.kitchen_sockets_1_1d:
+  friendly_name: Kitchen
+sensor.cooker_3_1d:
+  friendly_name: Cooker
+sensor.car_charger_12_1d:
+  friendly_name: Car
+sensor.immersion_heater_4_1d:
+  friendly_name: Immersion
+sensor.hall_6_1d:
+  friendly_name: Hall
+sensor.home_gas_daily:
+  friendly_name: Gas

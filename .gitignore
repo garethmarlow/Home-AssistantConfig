@@ -2,6 +2,7 @@
 !*.yaml
 !scenes
 !packages
+!packages/appliance_power_monitoring
 !ui-panel
 !.gitignore
 config_ic3.yaml

@@ -1,0 +1,63 @@
+timer:
+  cooker_delayed_job_completion_timer:
+    name: Cooker - Delayed Job Completion Timer
+    duration: "00:15:00" # <- Note that the time here. Leave as it is (15 min)
+    restore: true
+    icon: mdi:toaster-oven
+
+input_boolean:
+  cooker_job_cycle:
+    name: Cooker - Job Cycle
+    icon: mdi:toaster-oven
+
+  cooker_automation_self_trigger:
+    name: Cooker - Automation Self-trigger
+    icon: mdi:toaster-oven
+
+input_select:
+  cooker_state_machine:
+    name: Cooker - State Machine
+    options:
+      - unplugged
+      - idle
+      - paused
+      - detached_overload
+      - job_ongoing
+      - job_completed
+    icon: mdi:toaster-oven
+
+sensor:
+  - name: Cooker Time Today
+    platform: history_stats    
+    entity_id: input_select.cooker_state_machine
+    state: "job_ongoing"
+    type: time
+    start: "{{ now().replace(hour=0, minute=0, second=0) }}"
+    end: "{{ now() }}"
+
+  - name: Cooker Cycles Today
+    platform: history_stats    
+    entity_id: input_select.cooker_state_machine
+    state: "job_completed"
+    type: count
+    start: "{{ now().replace(hour=0, minute=0, second=0) }}"
+    end: "{{ now() }}"
+
+template:
+  - sensor:
+      - name: Cooker Hours Available
+        unique_id: sensor.cooker_hours_available
+        icon: mdi:toaster-oven
+        unit_of_measurement: hr
+        state: >-
+          {% set energy_per_hr=2.7 %}
+          {% set surplus_capacity=states.binary_sensor.battery_non_viability.attributes.surplus_capacity %}
+          {{ (surplus_capacity/energy_per_hr) | round(1) }}
+
+      - name: Cooker Time Available String
+        unique_id: sensor.cooker_time_available_string
+        icon: mdi:toaster-oven
+        state: >-
+          {% set hours = states.sensor.cooker_hours_available.state | float | round(0,'floor') %}
+          {% set minutes = ((states.sensor.cooker_hours_available.state | float - hours) * 60) | round(0) %}
+          {% if hours > 0 %}{{ hours }}h {% endif %}{{ minutes }}m

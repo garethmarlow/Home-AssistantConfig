@@ -1,0 +1,55 @@
+timer:
+  tumble_dryer_delayed_job_completion_timer:
+    name: Tumble Dryer - Delayed Job Completion Timer
+    duration: "00:15:00" # <- Note that the time here. Leave as it is (15 min)
+    restore: true
+    icon: mdi:tumble-dryer
+
+input_boolean:
+  tumble_dryer_job_cycle:
+    name: Tumble Dryer - Job Cycle
+    icon: mdi:tumble-dryer
+
+  tumble_dryer_automation_self_trigger:
+    name: Tumble Dryer - Automation Self-trigger
+    icon: mdi:tumble-dryer
+
+input_select:
+  tumble_dryer_state_machine:
+    name: Tumble Dryer - State Machine
+    options:
+      - unplugged
+      - idle
+      - paused
+      - detached_overload
+      - job_ongoing
+      - job_completed
+    icon: mdi:tumble-dryer
+
+sensor:
+  - name: Tumble Dryer Time Today
+    platform: history_stats    
+    entity_id: input_select.tumble_dryer_state_machine
+    state: "job_ongoing"
+    type: time
+    start: "{{ now().replace(hour=0, minute=0, second=0) }}"
+    end: "{{ now() }}"
+
+  - name: Tumble Dryer Cycles Today
+    platform: history_stats    
+    entity_id: input_select.tumble_dryer_state_machine
+    state: "job_completed"
+    type: count
+    start: "{{ now().replace(hour=0, minute=0, second=0) }}"
+    end: "{{ now() }}"
+
+template:
+  - sensor:
+      - name: Tumble Dryer Cycles Available
+        unique_id: sensor.tumble_dryer_cycles_available
+        icon: mdi:tumble-dryer
+        unit_of_measurement: 'cyc'
+        state: >-
+          {% set energy_per_cycle=2.7 %}
+          {% set surplus_capacity=states.binary_sensor.battery_non_viability.attributes.surplus_capacity %}
+          {{ (surplus_capacity/energy_per_cycle) | round(0,'floor') }}

@@ -1,0 +1,55 @@
+timer:
+  washing_machine_delayed_job_completion_timer:
+    name: Washing Machine - Delayed Job Completion Timer
+    duration: "00:15:00" # <- Note that the time here. Leave as it is (15 min)
+    restore: true
+    icon: mdi:washing-machine
+
+input_boolean:
+  washing_machine_job_cycle:
+    name: Washing Machine - Job Cycle
+    icon: mdi:washing-machine
+
+  washing_machine_automation_self_trigger:
+    name: Washing Machine - Automation Self-trigger
+    icon: mdi:washing-machine
+
+input_select:
+  washing_machine_state_machine:
+    name: Washing Machine - State Machine
+    options:
+      - unplugged
+      - idle
+      - paused
+      - detached_overload
+      - job_ongoing
+      - job_completed
+    icon: mdi:washing-machine
+
+sensor:
+  - name: Washing Machine Time Today
+    platform: history_stats    
+    entity_id: input_select.washing_machine_state_machine
+    state: "job_ongoing"
+    type: time
+    start: "{{ now().replace(hour=0, minute=0, second=0) }}"
+    end: "{{ now() }}"
+
+  - name: Washing Machine Cycles Today
+    platform: history_stats    
+    entity_id: input_select.washing_machine_state_machine
+    state: "job_completed"
+    type: count
+    start: "{{ now().replace(hour=0, minute=0, second=0) }}"
+    end: "{{ now() }}"
+
+template:
+  - sensor:
+      - name: Washing Machine Cycles Available
+        unique_id: sensor.washing_machine_cycles_available
+        icon: mdi:washing-machine
+        unit_of_measurement: 'cyc'
+        state: >-
+          {% set energy_per_cycle=1.1 %}
+          {% set surplus_capacity=states.binary_sensor.battery_non_viability.attributes.surplus_capacity %}
+          {{ (surplus_capacity/energy_per_cycle) | round(0,'floor') }}

@@ -1,0 +1,122 @@
+## helpers, sensors, automations and customisations for managing domestic consumption and battery life
+## Helpers
+
+## Sensors
+template:
+  - binary_sensor:
+    - name: "Battery non-viability"
+      unique_id: binary_sensor.battery_non_viability
+      icon: >-
+        {% if this.attributes.non_viability | default(False) %}
+          mdi:battery-alert-variant-outline
+        {% else %}
+          mdi:battery-check-outline
+        {% endif %}
+      state: >
+        {{ this.attributes.non_viability | default(False) }}
+
+      attributes:
+        available_capacity: >-
+          {{ this.attributes.remaining_capacity - this.attributes.min_capacity }}
+
+        current_net_load: >-
+          {{ states('sensor.house_net_load_30_minute_average') | float(default=0) }}
+
+        surplus_capacity: >-
+          {% set available_capacity = this.attributes.available_capacity %}
+          {% set base_load = this.attributes.base_load %}
+          {% set time_to_next_off_peak = this.attributes.time_to_next_off_peak %}
+          {% set energy_required_for_base_load = this.attributes.energy_required_for_base_load %}
+          {% set surplus_capacity = available_capacity - energy_required_for_base_load %}
+          {% set surplus_capacity = 0 if surplus_capacity < 0 else surplus_capacity %}
+          {{ surplus_capacity }}
+
+        time_to_next_off_peak: >-
+          {{ ((as_timestamp(states.binary_sensor.battery_co2_mitigation.attributes.off_peak_next_start ) - as_timestamp(now())) / 3600) | float(default=0.1) }}
+
+        energy_required_for_base_load: >-
+          {{ this.attributes.time_to_next_off_peak * this.attributes.base_load }}
+
+        energy_required_for_current_net_load: >-
+          {{ this.attributes.time_to_next_off_peak * this.attributes.current_net_load }}
+
+        time_remaining_at_current_net_load: >-
+          {% set current_net_load = this.attributes.current_net_load %}
+          {% set available_capacity = this.attributes.available_capacity %}
+          {% set hours = (available_capacity / current_net_load) | float(1)  %}
+          {% set hours = 24 if hours > 24 else hours  %}
+          {% set hours = 0 if hours < 0 else hours  %}
+          {{ hours }}
+
+        time_remaining_at_base_load: >-
+          {% set base_load = this.attributes.base_load %}
+          {% set available_capacity = this.attributes.available_capacity %}
+          {% set hours = (available_capacity / base_load) | float(1)  %}
+          {% set hours = 24 if hours > 24 else hours  %}
+          {% set hours = 0 if hours < 0 else hours  %}
+          {{ hours }}
+
+        time_surplus: >-
+          {% set time_surplus = this.attributes.time_remaining_at_base_load - this.attributes.time_to_next_off_peak %}
+          {% if time_surplus > 0 %}
+          {{ time_surplus }}
+          {% else %}
+          0
+          {% endif %}
+
+        time_surplus_string: >-
+          {% set hours = this.attributes.time_surplus | round(0,'floor') %}
+          {% set minutes = ((this.attributes.time_surplus - hours) * 60) | round(0) %}
+          {% if hours > 0 %}{{ hours }}h {% endif %}{{ minutes }}m
+
+        time_deficit: >-
+          {% set time_deficit = this.attributes.time_to_next_off_peak - this.attributes.time_remaining_at_base_load %}
+          {% if time_deficit > 0 %}
+          {{ time_deficit }}
+          {% else %}
+          0
+          {% endif %}        
+
+        time_deficit_string: >-
+          {% set hours = this.attributes.time_deficit | round(0,'floor') %}
+          {% set minutes = ((this.attributes.time_deficit - hours) * 60) | round(0) %}
+          {% if hours > 0 %}{{ hours }}h {% endif %}{{ minutes }}m
+
+        current_net_load_capacity_coverage: >-
+          {{ this.attributes.available_capacity / this.attributes.energy_required_for_current_net_load }}
+
+        base_load_capacity_coverage: >-
+          {{ this.attributes.available_capacity / this.attributes.energy_required_for_base_load }}
+
+        remaining_capacity: >-
+          {{ states('sensor.bms_kwh_remaining') | float(default=0) }}
+
+        base_load: >-
+          {{ 0.6 }}
+
+        min_capacity: >-
+          {% set batteries = 7 %}
+          {% set battery_capacity = 2.85 %}
+          {% set min_soc = 0.1 %}
+          {{ batteries * battery_capacity * min_soc }}
+
+
+
+        non_viability: >-
+          {{ 0 <= this.attributes.current_net_load_capacity_coverage < 1 }}
+
+  - sensor:
+    - name: House Net Load
+      unique_id: sensor.house_net_load
+      unit_of_measurement: kW
+      state: >-
+        {{ states('sensor.load_power') | float(default=0) - states('sensor.solar_power_now') | float(default=0) }}
+
+
+sensor:
+  - platform: statistics
+    name: "House Net Load 30 minute average"
+    entity_id: sensor.house_net_load
+    state_characteristic: mean
+    max_age:
+      minutes: 30

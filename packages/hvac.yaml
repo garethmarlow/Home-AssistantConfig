@@ -1,0 +1,286 @@
+template:
+  - sensor:
+    - name: Bathroom
+      unique_id: "bathroom_current_temperature"
+      state: '{{ state_attr("climate.bathroom","current_temperature") }}'
+      unit_of_measurement: "°C"
+      state_class: measurement
+
+    - name: Bathroom TRV
+      unique_id: "bathroom_trv_battery"
+      state: >- 
+        {% if state_attr("climate.bathroom", "status").active_faults %}
+        {% if state_attr("climate.bathroom", "status").active_faults[0].faultType == "TempZoneActuatorLowBattery" %}
+        25
+        {% else %}
+        0
+        {% endif %}
+        {% else %}
+        100
+        {% endif %}
+      unit_of_measurement: "%"
+      device_class: battery
+
+    - name: Daniel's Room
+      unique_id: daniel_s_room_current_temperature
+      state: '{{ state_attr("climate.daniel_s_room","current_temperature") }}'
+      unit_of_measurement: "°C"
+      state_class: measurement
+
+    - name: Daniel's Room TRV
+      unique_id: "daniel_s_room_trv_battery"
+      state: >-
+        {% if state_attr("climate.daniel_s_room", "status").active_faults %}
+        {% if state_attr("climate.daniel_s_room", "status").active_faults[0].faultType == "TempZoneActuatorLowBattery" %}
+        25
+        {% else %}
+        0
+        {% endif %}
+        {% else %}
+        100
+        {% endif %}
+      unit_of_measurement: "%"
+      device_class: battery
+
+    - name: Elly's Room
+      unique_id: elly_s_room_current_temperature
+      state: '{{ state_attr("climate.elly_s_room","current_temperature")}}'
+      unit_of_measurement: "°C"
+      state_class: measurement
+
+    - name: Elly's Room TRV
+      unique_id: "elly_s_room_trv_battery"
+      state: >-
+        {% if state_attr("climate.elly_s_room", "status").active_faults %}
+        {% if state_attr("climate.elly_s_room", "status").active_faults[0].faultType == "TempZoneActuatorLowBattery" %}
+        25
+        {% else %}
+        0
+        {% endif %}
+        {% else %}
+        100
+        {% endif %}
+      unit_of_measurement: "%"
+      device_class: battery
+
+    - name: Gym
+      unique_id: gym_current_temperature
+      state: '{{ state_attr("climate.gym","current_temperature")}}'
+      unit_of_measurement: "°C"
+      state_class: measurement
+
+    - name: Gym TRV
+      unique_id: "gym_trv_battery"
+      state: >-
+        {% if state_attr("climate.gym", "status").active_faults %}
+        {% if state_attr("climate.gym", "status").active_faults[0].faultType == "TempZoneActuatorLowBattery" %}
+        25
+        {% else %}
+        0
+        {% endif %}
+        {% else %}
+        100
+        {% endif %}
+      unit_of_measurement: "%"
+      device_class: battery
+
+    - name: Kitchen
+      unique_id: kitchen_current_temperature
+      state: '{{ state_attr("climate.kitchen","current_temperature")}}'
+      unit_of_measurement: "°C"
+      state_class: measurement
+
+    - name: Kitchen TRV
+      unique_id: "kitchen_trv_battery"
+      state: >-
+        {% if state_attr("climate.kitchen", "status").active_faults %}
+        {% if state_attr("climate.kitchen", "status").active_faults[0].faultType == "TempZoneActuatorLowBattery" %}
+        25
+        {% else %}
+        0
+        {% endif %}
+        {% else %}
+        100
+        {% endif %}
+      unit_of_measurement: "%"
+      device_class: battery
+
+    - name: Laundry
+      unique_id: laundry_current_temperature
+      state: '{{ state_attr("climate.laundry","current_temperature")}}'
+      unit_of_measurement: "°C"
+      state_class: measurement
+
+    - name: Laundry TRV
+      unique_id: "laundry_trv_battery"
+      state: >-
+        {% if state_attr("climate.laundry", "status").active_faults %}
+        {% if state_attr("climate.laundry", "status").active_faults[0].faultType == "TempZoneActuatorLowBattery" %}
+        25
+        {% else %}
+        0
+        {% endif %}
+        {% else %}
+        100
+        {% endif %}
+      unit_of_measurement: "%"
+      device_class: battery
+
+    - name: Living Room
+      unique_id: living_room_current_temperature
+      state: '{{ state_attr("climate.living_room","current_temperature")}}'
+      unit_of_measurement: "°C"
+      state_class: measurement
+
+    - name: Living Room TRV
+      unique_id: "living_room_trv_battery"
+      state: >-
+        {% if state_attr("climate.living_room", "status").active_faults %}
+        {% if state_attr("climate.living_room", "status").active_faults[0].faultType == "TempZoneActuatorLowBattery" %}
+        25
+        {% else %}
+        0
+        {% endif %}
+        {% else %}
+        100
+        {% endif %}
+      unit_of_measurement: "%"
+      device_class: battery
+
+    - name: Attic Study
+      unique_id: attic_study_current_temperature
+      state: '{{ state_attr("climate.attic_study","current_temperature")}}'
+      unit_of_measurement: "°C"
+      state_class: measurement
+
+    - name: Attic Study TRV
+      unique_id: "attic_study_trv_battery"
+      state: >-
+        {% if state_attr("climate.attic_study", "status").active_faults %}
+        {% if state_attr("climate.attic_study", "status").active_faults[0].faultType == "TempZoneActuatorLowBattery" %}
+        25
+        {% else %}
+        0
+        {% endif %}
+        {% else %}
+        100
+        {% endif %}
+      unit_of_measurement: "%"
+      device_class: battery
+
+    - name: Main Bedroom
+      unique_id: main_bedroom_current_temperature
+      state: '{{ state_attr("climate.main_bedroom","current_temperature")}}'
+      unit_of_measurement: "°C"
+      state_class: measurement
+
+    - name: Main Bedroom TRV
+      unique_id: "main_bedroom_trv_battery"
+      state: >-
+        {% if state_attr("climate.main_bedroom", "status").active_faults %}
+        {% if state_attr("climate.main_bedroom", "status").active_faults[0].faultType == "TempZoneActuatorLowBattery" %}
+        25
+        {% else %}
+        0
+        {% endif %}
+        {% else %}
+        100
+        {% endif %}
+      unit_of_measurement: "%"
+      device_class: battery
+
+    - name: Rory's Room
+      unique_id: rory_s_room_current_temperature
+      state: '{{ state_attr("climate.rory_s_room","current_temperature")}}'
+      unit_of_measurement: "°C"
+      state_class: measurement
+
+    - name: Rory's Room TRV
+      unique_id: "rory_s_room_trv_battery"
+      state: >-
+        {% if state_attr("climate.rory_s_room", "status").active_faults %}
+        {% if state_attr("climate.rory_s_room", "status").active_faults[0].faultType == "TempZoneActuatorLowBattery" %}
+        25
+        {% else %}
+        0
+        {% endif %}
+        {% else %}
+        100
+        {% endif %}
+      unit_of_measurement: "%"
+      device_class: battery
+
+    - name: Shower Room
+      unique_id: shower_room_current_temperature
+      state: '{{ state_attr("climate.shower_room","current_temperature")}}'
+      unit_of_measurement: "°C"
+      state_class: measurement
+
+    - name: Shower Room TRV
+      unique_id: "shower_room_trv_battery"
+      state: >-
+        {% if state_attr("climate.shower_room", "status").active_faults %}
+        {% if state_attr("climate.shower_room", "status").active_faults[0].faultType == "TempZoneActuatorLowBattery" %}
+        25
+        {% else %}
+        0
+        {% endif %}
+        {% else %}
+        100
+        {% endif %}
+      unit_of_measurement: "%"
+      device_class: battery
+
+    - name: Downstairs Study
+      unique_id: downstairs_study_current_temperature
+      state: '{{ state_attr("climate.study","current_temperature")}}'
+      unit_of_measurement: "°C"
+      state_class: measurement
+
+    - name: Downstairs Study TRV
+      unique_id: "downstairs_study_trv_battery"
+      state: >-
+        {% if state_attr("climate.study", "status").active_faults %}
+        {% if state_attr("climate.study", "status").active_faults[0].faultType == "TempZoneActuatorLowBattery" %}
+        25
+        {% else %}
+        0
+        {% endif %}
+        {% else %}
+        100
+        {% endif %}
+      unit_of_measurement: "%"
+      device_class: battery
+
+    - name: House Average
+      unique_id: house_average_current_temperature
+      state: '{{ state_attr("climate.home","current_temperature")}}'
+      unit_of_measurement: "°C"
+      state_class: measurement
+
+    - name: Hot Water Tank
+      unique_id: hot_water_tank_current_temperature
+      state: '{{ state_attr("water_heater.dhw_controller","current_temperature")}}'
+      unit_of_measurement: "°C"
+      state_class: measurement
+
+    - name: Hot Water Tank Sensor
+      unique_id: "dhw_controller_battery"
+      state: >-
+        {% if state_attr("water_heater.dhw_controller", "status").active_faults %}
+        {% if state_attr("water_heater.dhw_controller", "status").active_faults[0].faultType == "DHWSensorLowBattery" %}
+        25
+        {% else %}
+        0
+        {% endif %}
+        {% else %}
+        100
+        {% endif %}
+      unit_of_measurement: "%"
+      device_class: battery
+
+    - name: Outside Temperature
+      unique_id: outside_current_temperature
+      state: '{{ states.weather.forecast_home.attributes["temperature"] | float | default(0)}}'
+      unit_of_measurement: "°C"
+      state_class: measurement

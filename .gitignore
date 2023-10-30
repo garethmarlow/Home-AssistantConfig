@@ -1,6 +1,8 @@
 *
 !*.yaml
 !scenes
+!packages
+!ui-panel
 !.gitignore
 config_ic3.yaml
 device_tracker.yaml

@@ -1,0 +1,409 @@
+theme: noctis_solarized
+title: Main
+type: custom:grid-layout
+
+################ GRID CONFIGURATION
+layout:
+  grid-template-columns: 317px 317px 317px 317px
+  grid-template-rows: 210px 105px 105px 105px 105px 100px
+  max_cols: 4
+icon: mdi:home
+badges: []
+cards:
+
+################ SHORT-RANGE WEATHER FORECAST
+
+  - type: custom:weather-card
+    style: |
+      ha-card {
+      height: 200px !important;
+      }
+    view_layout:
+      grid-column: 1 / span 2
+      grid-row: 1 / span 1
+    entity: weather.openweathermap
+    icons: "/hacsfiles/weather-card/icons/"
+    num_segments: 5 # optional, defaults to 12
+    name:  # optional, defaults to "Hourly Weather"
+    current: false
+    details: false
+    forecast: true
+    hourly_forecast: true
+    number_of_forecast: 3
+
+################ COLUMN 4 BIN COLLECTION
+
+  - type: custom:stack-in-card
+    view_layout:
+      grid-column: 4 / 4
+      grid-row: 4 / 4
+    cards:
+
+    - type: horizontal-stack
+      cards:
+        - type: custom:button-card
+          entity: sensor.next_bin_collection
+          show_name: false
+          show_icon: true
+          layout: name_state
+          show_state: null
+          icon: |
+            [[[
+              var collection = entity.state.split("|")[1]
+              if (collection == "Organic")
+              { return "mdi:leaf" }
+              else if (collection == "Recycle")
+              { return "mdi:recycle" }
+              else if (collection == "Domestic")
+              { return "mdi:trash-can-outline" }
+            ]]]
+          state:
+          - color: green
+            operator: template
+            value: '[[[ return entity.state.split("|")[1] == "Organic" ]]]'
+          - color: blue
+            operator: template
+            value: '[[[ return entity.state.split("|")[1] == "Recycle" ]]]'
+          - color: default
+            operator: template
+            value: '[[[ return entity.state.split("|")[1] == "Domestic" ]]]'
+
+
+        - type: conditional
+          conditions:
+          - entity: binary_sensor.next_bin_collection_double
+            state: "on"
+            show_icon: false
+
+          card:
+            type: custom:button-card
+            entity: sensor.next_bin_collection
+            show_name: false
+            show_icon: true
+            layout: name_state
+            show_state: null
+            icon: |
+              [[[
+                var collection = entity.state.split("|")[2]
+                if (collection == "Organic")
+                { return "mdi:leaf" }
+                else if (collection == "Recycle")
+                { return "mdi:recycle" }
+                else if (collection == "Domestic")
+                { return "mdi:trash-can-outline" }
+              ]]]
+            state:
+            - color: green
+              operator: template
+              value: '[[[ return entity.state.split("|")[2] == "Organic" ]]]'
+            - color: blue
+              operator: template
+              value: '[[[ return entity.state.split("|")[2] == "Recycle" ]]]'
+            - color: default
+              operator: template
+              value: '[[[ return entity.state.split("|")[2] == "Domestic" ]]]'
+
+    - type: markdown
+      style: |
+        ha-card {
+        font-size: 18px;
+        text-align: center;
+        }
+      content: |
+        Bin Day is {{ states.sensor.next_bin_collection.state.split("|")[0] }}
+
+################ COLUMN 4 LOCATIONS
+
+  - type: glance
+    columns: 5
+    show_name: false
+    view_layout:
+      grid-column: 4 / 4
+      grid-row: 2 / 2
+    style: |
+      ha-card {
+      height: 202px !important;
+      }
+    entities:
+      - entity: person.rory_marlow
+        name: RM
+      - entity: person.daniel_marlow
+        name: DM
+      - entity: person.nessa_marlow
+        name: NM
+      - entity: person.gareth_marlow
+        name: GM
+      - entity: device_tracker.blue_shell_location_tracker
+        name: Car
+        image: /local/blue_shell.jpg
+      - entity: sensor.rorys_iphone_battery_level
+      - entity: sensor.sulky_s_phone_battery_level
+      - entity: sensor.vanessas_iphone_battery_level
+      - entity: sensor.gareths_iphone_battery_level
+      - entity: sensor.blue_shell_battery
+
+################ COLUMN 1 - DANIEL
+
+  - type: custom:stack-in-card
+    view_layout:
+      grid-column: 1 / 1
+      grid-row: 2 / span 1
+    cards:
+    - type: markdown
+      content: '## Daniel'
+      style: |
+        ha-card {
+        border: none;
+        font-size: 20px;
+        }
+
+    - type: custom:atomic-calendar-revive
+      style: |
+        ha-card {
+        height: 240px !important;
+        border: none;
+        font-size: 18px;
+        padding: 0px;
+        }
+      entities:
+      - entity: calendar.daniel_schedule
+        blocklist: 'Homework|Test|Deadline'
+      maxDaysToShow: 10
+      showLoader: false
+      showLocation: false
+      showWeekDay: true
+      showProgressBar: false
+      showRelativeTime: false
+      hideFinishedEvents: true
+      fullDayEventText: ""
+
+  - type: custom:atomic-calendar-revive
+    view_layout:
+      grid-column: 1 / 1
+      grid-row: 5 / span 1  
+    style: |
+      ha-card {
+      height: 200px !important;
+      font-size: 18px;
+      }
+    entities:
+    - entity: calendar.daniel_schedule
+      allowlist: 'Homework|Test|Deadline'
+    maxDaysToShow: 365
+    showLoader: false
+    showLocation: false
+    showWeekDay: true
+    showProgressBar: false
+    showHours: false
+#    showRelativeTime: false
+    hideFinishedEvents: true
+    fullDayEventText: ""
+
+################ COLUMN 2 - RORY
+
+  - type: custom:stack-in-card
+    view_layout:
+      grid-column: 2 / 2
+      grid-row: 2 / span 1
+    cards:
+    - type: markdown
+      content: '## Rory'
+      style: |
+        ha-card {
+        border: none;
+        font-size: 20px;
+        }
+
+    - type: custom:atomic-calendar-revive
+      style: |
+        ha-card {
+        height: 240px !important;
+        border: 0px;
+        font-size: 18px;
+        }
+      entities:
+      - entity: calendar.rory_schedule
+        name: "Rory's's Timetable"
+        blocklist: 'Homework|Test|Deadline'
+      maxDaysToShow: 10
+      showLoader: false
+      showLocation: false
+      showWeekDay: true
+      showProgressBar: false
+
+      showRelativeTime: false
+      hideFinishedEvents: true
+      fullDayEventText: ""
+
+  - type: custom:atomic-calendar-revive
+    view_layout:
+      grid-column: 2 / 2
+      grid-row: 5 / span 1  
+    style: |
+      ha-card {
+      height: 200px !important;
+      font-size: 18px;
+      }
+    entities:
+    - entity: calendar.rory_schedule
+      name: "Rory's's Deadlines"
+      allowlist: 'Homework|Test|Deadline'
+    maxDaysToShow: 365
+    showLoader: false
+    showLocation: false
+    showWeekDay: true
+    showProgressBar: false
+    showHours: false
+#    showRelativeTime: false
+    hideFinishedEvents: true
+    fullDayEventText: ""
+
+################ DRIVEWAY LIVE CAM
+
+  - type: picture-entity
+    style: |
+      ha-card {
+      height: 200px !important;
+      }
+    view_layout:
+      grid-column: 3 / 3
+      grid-row: 1 / 1
+    show_state: false
+    show_name: false
+    camera_view: auto
+    entity: camera.camera1
+
+################ COLUMN 3 G&N
+
+  - type: custom:stack-in-card
+    view_layout:
+      grid-column: 3 / 3
+      grid-row: 2 / span 1
+    cards:
+    - type: markdown
+      content: '## Gareth and Nessa'
+      style: |
+        ha-card {
+        border: none;
+        font-size: 20px;
+        }
+
+    - type: custom:atomic-calendar-revive
+      style: |
+        ha-card {
+        height: 445px !important;
+        border: none;
+        font-size: 18px;
+        }
+      entities:
+      - entity: calendar.gareth_and_nessa_shared
+      maxDaysToShow: 365
+      showLoader: false
+      showLocation: false
+#      showMonth: true
+      showWeekDay: true
+      showProgressBar: false
+      showHours: false
+  #    showRelativeTime: false
+      hideFinishedEvents: true
+      fullDayEventText: ""
+
+  - type: vertical-stack
+    style: |
+      ha-card {
+      height: 210px !important;
+      }
+    view_layout:
+      grid-column: 4 / 4
+      grid-row: 1 / 1 
+    cards:
+    - type: custom:stack-in-card
+      cards:
+      - type: horizontal-stack
+        cards:
+          - show_name: true
+            show_icon: true
+            type: button
+            icon: mdi:toggle-switch
+            tap_action:
+              action: navigate
+              navigation_path: /lovelace-panel/3?wp_enabled=true
+          - type: button
+            icon: mdi:battery
+            tap_action:
+              action: navigate
+              navigation_path: /lovelace-panel/2?wp_enabled=true
+          - type: button
+            icon: mdi:transmission-tower-import
+            tap_action:
+              action: navigate
+              navigation_path: /lovelace-panel/1?wp_enabled=true
+          - type: button
+            icon: mdi:home
+            tap_action:
+              action: navigate
+              navigation_path: /lovelace-panel/?wp_enabled=true
+    - type: custom:digital-clock
+      style: |
+        ha-card {
+        height: 147px !important;
+        }    
+
+  - type: horizontal-stack
+    view_layout:
+      grid-column: 1 / 1
+      grid-row: 7 / 7 
+    cards:
+    - type: button
+      entity: input_boolean.inhaler_am
+      show_name: false
+    - type: button
+      entity: input_boolean.inhaler_pm
+      show_name: false   
+    - type: button
+      entity: input_number.peak_flow
+      show_name: false   
+
+  - type: horizontal-stack
+    view_layout:
+      grid-column: 2 / 2
+      grid-row: 7 / 7 
+    cards:
+    - type: button
+      entity: input_boolean.feed_tabby
+      show_name: false
+    - type: button
+      entity: input_boolean.dishwasher_am
+      show_name: false
+    - type: button
+      entity: input_boolean.dishwasher_pm
+      show_name: false   
+
+  - type: horizontal-stack
+    view_layout:
+      grid-column: 3 / 3
+      grid-row: 7 / 7 
+    cards:
+    - type: button
+      entity: binary_sensor.blue_shell_charger
+      tap_action: false
+      show_name: false
+    - type: button
+      entity: lock.blue_shell_charge_port_latch
+      tap_action: 
+        action: call-service
+        service: lock.unlock
+        data:
+          entity_id: lock.blue_shell_charge_port_latch
+      show_name: false
+    - type: button
+      entity: switch.blue_shell_climate
+      show_name: false
+      tap_action: 
+        action: toggle
+    - type: button
+      entity: switch.blue_shell_defrost
+      show_name: false
+      icon: "mdi:snowflake-melt"
+      tap_action: 
+        action: toggle

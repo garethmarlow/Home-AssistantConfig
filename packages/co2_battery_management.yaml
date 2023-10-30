@@ -1,0 +1,158 @@
+## helpers, sensors, automations and customisations for CO2 mitigation when charging the home battery
+## Helpers
+input_datetime:
+  off_peak_start_time:
+    name: Off Peak start time
+    icon: "mdi:clock-start"
+    has_date: false
+    has_time: true
+
+  off_peak_end_time:
+    name: Off Peak end time
+    icon: "mdi:clock-end"
+    has_date: false
+    has_time: true
+
+input_boolean:
+  charge_requested:
+    name: Battery charge charge requested
+    icon: "mdi:battery"
+
+## Template Sensors
+template:
+  - binary_sensor:
+    - name: Battery CO2 mitigation
+      unique_id: binary_sensor.battery_co2_mitigation
+      icon: "mdi:power-plug-battery"
+      state: >-
+        {% set off_peak_active = this.attributes.off_peak_active %}
+        {% set no_forecast = this.attributes.no_forecast %}
+        {% set green_now = this.attributes.green_now | default('unavailable') %}
+        {% if no_forecast %}
+        {{ off_peak_active }}
+        {% else %}
+        {{ off_peak_active and green_now }}
+        {% endif %}
+
+      attributes:
+        off_peak_next_start: >-
+          {% if states.input_datetime.off_peak_start_time.state > now().strftime('%H:%M:%S') %}
+          {% set base_date=now().date().strftime('%Y-%m-%d') %}
+          {% else %}
+          {% set base_date=(now().date() + timedelta(days=1)).strftime('%Y-%m-%d') %}
+          {% endif %}
+          {% set start_hour=state_attr('input_datetime.off_peak_start_time','hour')|string %}
+          {% set start_min=state_attr('input_datetime.off_peak_start_time','minute')|string %}
+          {% set dtstring=base_date + " " + start_hour + ":" + start_min %}
+          {{ as_local(strptime(dtstring,'%Y-%m-%d %H:%M')).isoformat() }}
+
+        off_peak_next_end: >-
+          {% if states.input_datetime.off_peak_end_time.state > now().strftime('%H:%M:%S') %}
+          {% set base_date=now().date().strftime('%Y-%m-%d') %}
+          {% else %}
+          {% set base_date=(now().date() + timedelta(days=1)).strftime('%Y-%m-%d') %}
+          {% endif %}
+          {% set end_hour=state_attr('input_datetime.off_peak_end_time','hour')|string %}
+          {% set end_min=state_attr('input_datetime.off_peak_end_time','minute')|string %}
+          {% set dtstring=base_date + " " + end_hour + ":" + end_min %}
+          {{ as_local(strptime(dtstring,'%Y-%m-%d %H:%M')).isoformat() }}
+
+        off_peak_active: >-
+          {{ this.attributes.off_peak_next_start | as_datetime > this.attributes.off_peak_next_end | as_datetime }}
+
+        target_soc: >-
+          {{ states("sensor.max_soc") | int }}
+
+        current_soc: >-
+          {{ states("sensor.battery_soc") | int }}
+
+        charge_rate: >-
+          {{ 25 }}
+
+        time_to_charge: >-
+          {{ (this.attributes.target_soc  - this.attributes.current_soc) / this.attributes.charge_rate }}
+
+        whole_hours_to_charge: >-
+          {{ this.attributes.time_to_charge | round(0,'ceil') }}
+
+        whole_hours_available: >-
+          {{ ((as_timestamp(this.attributes.off_peak_next_end ) - as_timestamp(now())) / 3600) | round (0) }}
+
+        carbon_forecast: >-
+          {{ state_attr('sensor.carbon_intensity_uk','forecast')[0:this.attributes.whole_hours_available] | map(attribute='intensity') |list }}  
+
+
+#         {# state_attr('sensor.grid_co2_uk_local_co2_intensity_forecast_48h','forecast')[0:this.attributes.whole_hours_available] | map(attribute='intensity') |list #}
+
+        current_intensity: >-
+          {{ this.attributes.carbon_forecast[0] | float }}
+
+        max_chargeable_intensity: >-
+          {% set forecast = this.attributes.carbon_forecast %}
+          {% set lowest_hours = forecast | sort %}
+          {% set hours_required = this.attributes.whole_hours_to_charge %}
+          {{ (lowest_hours[0:(hours_required)] | sort(reverse=true))[0] | float }}
+
+        no_forecast: >-
+          {{ True if state_attr('sensor.carbon_intensity_uk','forecast') is none else False }}
+
+        green_now: >-
+          {% set current_intensity = this.attributes.current_intensity %}
+          {% set max_chargeable_intensity = this.attributes.max_chargeable_intensity %}
+          {{ current_intensity <= max_chargeable_intensity }}
+
+automation:
+  - alias: CO2 Battery Management
+    id: autidco2batterymanagement
+    description: "Charges the home battery for the next 30 minutes if this is a lowest-carbon slot"
+    trigger:
+      - platform: time_pattern
+        minutes: "0"
+      - platform: time_pattern
+        minutes: "30"
+    condition: []
+    action:
+      - if:
+          - condition: state
+            entity_id: binary_sensor.battery_co2_mitigation
+            state: "on"
+        then:
+          - service: foxess_modbus.update_charge_period
+            data:
+              inverter: bb431a8f0b4902c51fdb98acdc4a6c6a
+              enable_force_charge: true
+              enable_charge_from_grid: true
+              start: >-
+                {{states.binary_sensor.battery_co2_mitigation.attributes.off_peak_next_start | as_timestamp | timestamp_custom('%H:%M:%S')}}
+              end: >-
+                {{states.binary_sensor.battery_co2_mitigation.attributes.off_peak_next_end | as_timestamp | timestamp_custom('%H:%M:%S')}}
+              charge_period: "2"
+          - service: input_boolean.turn_on
+            data: {}
+            target:
+              entity_id: input_boolean.charge_requested
+        else:
+          - service: foxess_modbus.update_charge_period
+            data:
+              inverter: bb431a8f0b4902c51fdb98acdc4a6c6a
+              enable_force_charge: true
+              enable_charge_from_grid: false
+              start: >-
+                {{states.binary_sensor.battery_co2_mitigation.attributes.off_peak_next_start | as_timestamp | timestamp_custom('%H:%M:%S')}}
+              end: >-
+                {{states.binary_sensor.battery_co2_mitigation.attributes.off_peak_next_end | as_timestamp | timestamp_custom('%H:%M:%S')}}
+              charge_period: "2"
+          - service: input_boolean.turn_off
+            data: {}
+            target:
+              entity_id: input_boolean.charge_requested
+    mode: single
+
+## Customisations
+homeassistant:
+  customize:
+    automation.co2_battery_management:
+      icon: "mdi:battery-arrow-up"
+
+    automation.co2_forecast_reload:
+      icon: "mdi:molecule-co2"

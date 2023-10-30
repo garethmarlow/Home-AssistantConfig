@@ -1,0 +1,135 @@
+sensor:
+# Setup Better Solar Tracking Sensors that resolve negative solar tracking  
+
+  - platform: integration
+    source: sensor.foxess_pv1_power
+    name: pv1_sum
+    unit_time: h
+    round: 2
+    
+  - name: battery_cell_imbalance_rolling
+    platform: statistics
+    entity_id: sensor.battery_cell_imbalance
+    state_characteristic: mean
+    sampling_size: 10
+    precision: 2
+  - name: inverter_efficiency_rolling
+    platform: statistics
+    entity_id: sensor.inverter_efficiency
+    state_characteristic: mean
+    sampling_size: 24
+    precision: 1
+  - name: inverter_in_daily
+    method: left
+    platform: integration
+    source: sensor.inverter_power_in
+    unit_time: h
+    round: 2
+  - name: inverter_out_daily
+    method: left
+    platform: integration
+    source: sensor.inverter_power_out
+    unit_time: h
+    round: 2    
+
+
+
+template:
+  - sensor:
+    - name: "Solar Power Daily"
+      unique_id: solar_power_daily
+      unit_of_measurement: "kWh"
+      state: "{{ states('sensor.daily_pv1_sum') | float }}"
+      state_class: total_increasing
+
+    - name: "Solar Power Now"
+      unit_of_measurement: "kW"
+      state: "{{ states('sensor.foxess_pv1_power') | float }}"
+
+    # calculate inverter efficiency % using the difference between power in and power out
+    - name: "Inverter efficiency"
+      unit_of_measurement: "%"
+      state: >
+        {% set power_out = states('sensor.inverter_power_out') | float(default=0) %}
+        {% set power_in = states('sensor.inverter_power_in') | float(default=0) %}
+        {% set efficiency = power_out / power_in * 100 if power_in > 0.0 else null %}
+        {% set efficiency = 100 if efficiency > 100 else efficiency %}
+        {{ efficiency | round(1) }}
+
+    # calculate cell imbalance as % using the difference between min and max cell voltage
+    - name: "Battery cell imbalance"
+      unit_of_measurement: "%"
+      state: >
+        {% set cell_high = states('sensor.bms_cell_mv_high') | float(default=0) %}
+        {% set cell_low = states('sensor.bms_cell_mv_low') | float(default=0) %}
+        {% set imbalance = (cell_high-cell_low) / (cell_high + cell_low) * 200 if cell_low > 0.0 else 0.0 %}
+        {% set imbalance = 0.0 if cell_high < cell_low else imbalance %}
+        {{ imbalance | round(2) }}
+  
+    # calculate the amount of energy stored in the battery today
+    - name: "Battery backfill"
+      device_class: "energy"
+      unit_of_measurement: "kWh"
+      state: >
+        {{( states('sensor.pv_energy_daily')|float(default=0)
+          + states('sensor.grid_daily')|float(default=0)
+          - states('sensor.load_daily')|float(default=0)
+          - states('sensor.feedin_daily')|float(default=0)
+          - states('sensor.losses_daily')|float(default=0)
+          ) | round(3) }}
+
+    # calculate power flowing into inverter from solar, battery and grid
+    - name: "Inverter power in"
+      device_class: "power"
+      unit_of_measurement: "kW"
+      state: >
+        {% set pv_power_in = states('sensor.pv_power_now') | float(default=0) %}
+        {% set rpower = states('sensor.RPower') | float(default=0) %}
+        {% set rpower_in = 0.0 if rpower > 0.0 else rpower * -1.0 %}
+        {% set bat_power = states('sensor.InvBatPower') | float(default=0) %}
+        {% set bat_power_in = 0.0 if bat_power < 0.0 else bat_power %}
+        {% set power_in = pv_power_in + rpower_in + bat_power_in %}
+        {{ power_in | round(3) }}
+
+    # calculate power flowing out of inverter
+    - name: "Inverter power out"
+      device_class: "power"
+      unit_of_measurement: "kW"
+      state: >
+        {% set rpower = states('sensor.RPower') | float(default=0) %}
+        {% set rpower_out = 0 if rpower < 0.0 else rpower %}
+        {% set eps_power_out = states('sensor.EPS_RPower') | float(default=0) %}
+        {% set bat_power = states('sensor.InvBatPower') | float(default=0) %}
+        {% set bat_power_out = 0 if bat_power > 0.0 else bat_power * -1.0 %}
+        {% set power_out = rpower_out + eps_power_out + bat_power_out %}
+        {{ power_out | round(3) }}
+
+    # calculate grid balance - difference between grid power imported and exported
+    - name: "Net import daily"
+      device_class: "power"
+      unit_of_measurement: "kWh"
+      state: >
+        {{( states('sensor.grid_daily') | float(default=0)
+          - states('sensor.feedin_daily') | float(default=0)
+          ) | round(3) }}
+
+    # calculate grid dependency - difference between load power consumed and solar power generated
+    - name: "Grid dependency daily"
+      device_class: "power"
+      unit_of_measurement: "kWh"
+      state: >
+        {{( states('sensor.load_daily') | float(default=0)
+          - states('sensor.pv_energy_daily') | float(default=0)
+          ) | round(3) }}
+
+    # calculate system losses. Clip range between -1kw and +1kw to remove sampling errors and spikes
+    - name: "System Losses"
+      device_class: "power"
+      unit_of_measurement: "kW"
+      state: >
+        {% set power_in = states('sensor.inverter_power_in') | float(default=0) %}
+        {% set power_out = states('sensor.inverter_power_out') | float(default=0) %}
+        {% set losses = power_in - power_out %}
+        {% set losses = -1.0 if losses < -1.0 else losses %}
+        {% set losses = 1.0 if losses > 1.0 else losses %}
+        {{ losses | round(3) }}

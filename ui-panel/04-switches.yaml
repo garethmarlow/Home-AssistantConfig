@@ -1,0 +1,327 @@
+theme: noctis_solarized
+title: Switches
+type: custom:grid-layout
+
+################ GRID CONFIGURATION
+layout:
+  grid-template-columns: 317px 317px 317px 317px
+  grid-template-rows: 210px 105px 105px 105px 105px 100px
+  max_cols: 4
+icon: mdi:toggle-switch
+badges: []
+cards:
+  - type: vertical-stack
+    style: |
+      ha-card {
+      height: 210px !important;
+      }
+    view_layout:
+      grid-column: 4 / 4
+      grid-row: 1 / 1 
+    cards:
+    - type: custom:stack-in-card
+      cards:
+      - type: horizontal-stack
+        cards:
+          - show_name: true
+            show_icon: true
+            type: button
+            icon: mdi:toggle-switch
+            tap_action:
+              action: navigate
+              navigation_path: /lovelace-panel/3?wp_enabled=true
+          - type: button
+            icon: mdi:battery
+            tap_action:
+              action: navigate
+              navigation_path: /lovelace-panel/2?wp_enabled=true
+          - type: button
+            icon: mdi:transmission-tower-import
+            tap_action:
+              action: navigate
+              navigation_path: /lovelace-panel/1?wp_enabled=true
+          - type: button
+            icon: mdi:home
+            tap_action:
+              action: navigate
+              navigation_path: /lovelace-panel/?wp_enabled=true
+    - type: custom:digital-clock
+      style: |
+        ha-card {
+        height: 147px !important;
+        }    
+
+  - type: grid
+    columns: 4
+    view_layout:
+      grid-column: 1/4
+      grid-row: 1/4
+    cards:    
+      - type: custom:mini-graph-card
+        entities:
+          - entity: climate.living_room
+            attribute: current_temperature
+            unit: °C
+          - color: gray
+            entity: sensor.night_state
+            name: Night
+            show_legend: false
+            show_line: false
+            show_points: false
+            y_axis: secondary
+        show:
+          extrema: false
+        icon: mdi:thermometer
+        align_header: left
+        align_icon: left
+        color_thresholds:
+          - value: 15
+            color: '#668cff'
+          - value: 18
+            color: '#ffff00'
+          - value: 20
+            color: '#ff0000'
+      - type: custom:mini-graph-card
+        entities:
+          - entity: climate.kitchen
+            attribute: current_temperature
+            unit: °C
+          - color: gray
+            entity: sensor.night_state
+            name: Night
+            show_legend: false
+            show_line: false
+            show_points: false
+            y_axis: secondary
+        icon: mdi:thermometer
+        align_header: left
+        align_icon: left
+        color_thresholds:
+          - value: 15
+            color: '#668cff'
+          - value: 18
+            color: '#ffff00'
+          - value: 20
+            color: '#ff0000'
+      - type: custom:mini-graph-card
+        entities:
+          - entity: climate.laundry
+            attribute: current_temperature
+            unit: °C
+          - color: gray
+            entity: sensor.night_state
+            name: Night
+            show_legend: false
+            show_line: false
+            show_points: false
+            y_axis: secondary
+        icon: mdi:thermometer
+        align_header: left
+        align_icon: left
+        color_thresholds:
+          - value: 15
+            color: '#668cff'
+          - value: 18
+            color: '#ffff00'
+          - value: 20
+            color: '#ff0000'
+      - type: custom:mini-graph-card
+        entities:
+          - entity: climate.main_bedroom
+            attribute: current_temperature
+            unit: °C
+          - color: gray
+            entity: sensor.night_state
+            name: Night
+            show_legend: false
+            show_line: false
+            show_points: false
+            y_axis: secondary
+        icon: mdi:thermometer
+        align_header: left
+        align_icon: left
+        color_thresholds:
+          - value: 15
+            color: '#668cff'
+          - value: 18
+            color: '#ffff00'
+          - value: 20
+            color: '#ff0000'
+      - type: custom:mini-graph-card
+        entities:
+          - entity: climate.gym
+            attribute: current_temperature
+            unit: °C
+          - color: gray
+            entity: sensor.night_state
+            name: Night
+            show_legend: false
+            show_line: false
+            show_points: false
+            y_axis: secondary
+        icon: mdi:thermometer
+        align_header: left
+        align_icon: left
+        color_thresholds:
+          - value: 15
+            color: '#668cff'
+          - value: 18
+            color: '#ffff00'
+          - value: 20
+            color: '#ff0000'
+      - type: custom:mini-graph-card
+        entities:
+          - entity: climate.daniel_s_room
+            attribute: current_temperature
+            unit: °C
+          - color: gray
+            entity: sensor.night_state
+            name: Night
+            show_legend: false
+            show_line: false
+            show_points: false
+            y_axis: secondary
+        icon: mdi:thermometer
+        align_header: left
+        align_icon: left
+        color_thresholds:
+          - value: 15
+            color: '#668cff'
+          - value: 18
+            color: '#ffff00'
+          - value: 20
+            color: '#ff0000'
+      - type: custom:mini-graph-card
+        entities:
+          - entity: climate.elly_s_room
+            attribute: current_temperature
+            unit: °C
+          - color: gray
+            entity: sensor.night_state
+            name: Night
+            show_legend: false
+            show_line: false
+            show_points: false
+            y_axis: secondary
+        icon: mdi:thermometer
+        align_header: left
+        align_icon: left
+        color_thresholds:
+          - value: 15
+            color: '#668cff'
+          - value: 18
+            color: '#ffff00'
+          - value: 20
+            color: '#ff0000'
+      - type: custom:mini-graph-card
+        entities:
+          - entity: climate.rory_s_room
+            attribute: current_temperature
+            unit: °C
+          - color: gray
+            entity: sensor.night_state
+            name: Night
+            show_legend: false
+            show_line: false
+            show_points: false
+            y_axis: secondary
+        icon: mdi:thermometer
+        align_header: left
+        align_icon: left
+        color_thresholds:
+          - value: 15
+            color: '#668cff'
+          - value: 18
+            color: '#ffff00'
+          - value: 20
+            color: '#ff0000'
+      - type: custom:mini-graph-card
+        entities:
+          - entity: climate.attic_study
+            attribute: current_temperature
+            unit: °C
+          - color: gray
+            entity: sensor.night_state
+            name: Night
+            show_legend: false
+            show_line: false
+            show_points: false
+            y_axis: secondary
+        icon: mdi:thermometer
+        align_header: left
+        align_icon: left
+        color_thresholds:
+          - value: 15
+            color: '#668cff'
+          - value: 18
+            color: '#ffff00'
+          - value: 20
+            color: '#ff0000'
+      - type: custom:mini-graph-card
+        entities:
+          - entity: climate.bathroom
+            attribute: current_temperature
+            unit: °C
+          - color: gray
+            entity: sensor.night_state
+            name: Night
+            show_legend: false
+            show_line: false
+            show_points: false
+            y_axis: secondary
+        icon: mdi:thermometer
+        align_header: left
+        align_icon: left
+        color_thresholds:
+          - value: 15
+            color: '#668cff'
+          - value: 18
+            color: '#ffff00'
+          - value: 20
+            color: '#ff0000'
+      - type: custom:mini-graph-card
+        entities:
+          - entity: climate.shower_room
+            attribute: current_temperature
+            unit: °C
+          - color: gray
+            entity: sensor.night_state
+            name: Night
+            show_legend: false
+            show_line: false
+            show_points: false
+            y_axis: secondary
+        icon: mdi:thermometer
+        align_header: left
+        align_icon: left
+        color_thresholds:
+          - value: 15
+            color: '#668cff'
+          - value: 18
+            color: '#ffff00'
+          - value: 20
+            color: '#ff0000'
+      - type: custom:mini-graph-card
+        entities:
+          - entity: water_heater.dhw_controller
+            name: Hot Water
+            attribute: current_temperature
+            unit: °C
+          - color: gray
+            entity: sensor.night_state
+            name: Night
+            show_legend: false
+            show_line: false
+            show_points: false
+            y_axis: secondary
+        icon: mdi:thermometer
+        align_header: left
+        align_icon: left
+        color_thresholds:
+          - value: 35
+            color: '#668cff'
+          - value: 45
+            color: '#ffff00'
+          - value: 50
+            color: '#ff0000'
+

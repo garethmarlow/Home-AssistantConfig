@@ -1,0 +1,147 @@
+template:
+  - sensor:
+    - name: Home Electricity Import Meter
+      unit_of_measurement: 'kWh'
+      device_class: energy
+      state_class: total_increasing
+      unique_id: home_electrity_import
+      icon: 'mdi:counter'
+      state: "{{ unavailable }}"
+
+    - name: Home Energy
+      unique_id: home_energy
+      state: "{{ states('sensor.octopus_energy_electricity_16p7133293_1012800425985_current_accumulative_consumption') | float | default(0) }}"
+      unit_of_measurement: "kWh"
+      state_class: total_increasing
+
+    - name: Home Energy Dirty
+      unique_id: home_energy_dirty
+      state: "{{ states('input_number.energy_fossil_home') | float | default(0) }}"
+      unit_of_measurement: "kWh"
+      state_class: total_increasing
+
+    - name: Home Energy Clean
+      unique_id: home_energy_clean
+      state: "{{ states('input_number.energy_low_carbon_home') | float | default(0) }}"
+      unit_of_measurement: "kWh"
+      state_class: total_increasing
+
+    - name: Home Peak Energy
+      unique_id: home_peak_energy
+      state: "{{ states('input_number.home_peak_energy') | float | default(0) }}"
+      unit_of_measurement: "kWh"
+      state_class: total_increasing
+
+    - name: Home Off Peak Energy
+      unique_id: home_off_peak_energy
+      state: "{{ states('input_number.home_off_peak_energy') | float | default(0) }}"
+      unit_of_measurement: "kWh"
+      state_class: total_increasing
+
+    - name: Home Internal Consumption
+      unique_id: home_internal_consumption
+      state: "{{ (states('sensor.lighting_energy')| float | default(0)) + (states('sensor.computer_energy')| float | default(0)) + (states('sensor.entertainment_energy')| float | default(0)) + (states('sensor.cooking_and_washing_energy')| float | default(0)) + (states('sensor.car_charger_energy')| float | default(0))  + (states('sensor.other_energy')| float | default(0)) }}"
+      unit_of_measurement: "kWh"
+      state_class: total_increasing
+
+    
+
+    - name: Home CO2
+      unique_id: home_carbon_footprint
+      state: "{{ states('input_number.carbon_footprint_home') | float | default(0) }}"
+      unit_of_measurement: "kgCO2eq"
+      state_class: total_increasing
+
+    - name: Home Gas CO2
+      unique_id: home_gas_carbon_footprint
+      # availability_template: >-
+      #   {% if is_state('sensor.home_gas_consumption_cleaned') %}
+      #   {{ 0.185 * (states('sensor.home_gas_consumption_cleaned') | float) }}
+      #   {% endif %}
+      state: "{{ 0.185 * (states('sensor.home_gas_consumption_cleaned') | float | default(0)) }}"
+      unit_of_measurement: "kgCO2eq"
+      state_class: total_increasing
+
+    - name: Home CO2 total
+      unique_id: home_total_carbon_footprint
+      state: "{{ states('sensor.home_co2') | float | default(0) + states('sensor.home_gas_co2') | float | default(0) }}"
+      unit_of_measurement: "kgCO2eq"
+      state_class: total_increasing
+
+    - name: Home CO2 shadow total
+      unique_id: home_total_shadow_carbon_footprint
+      state: "{{ states('sensor.home_internal_shadow_carbon') | float | default(0) + states('sensor.home_gas_co2') | float | default(0) }}"
+      unit_of_measurement: "kgCO2eq"
+      state_class: total_increasing      
+
+    - name: Home Cost
+      unique_id: home_cost
+      state: "{{ states('input_number.cost_home') | float | default(0) }}"
+      unit_of_measurement: "GBP"
+      state_class: total_increasing
+
+    - name: Home Shadow Cost
+      unique_id: home_shadow_cost
+      state: "{{ states('input_number.home_shadow_cost') | float | default(0) }}"
+      unit_of_measurement: "GBP"
+      state_class: total_increasing
+
+    - name: Home Peak Cost
+      unique_id: home_peak_cost
+      state: "{{ states('input_number.home_peak_cost') | float | default(0) }}"
+      unit_of_measurement: "GBP"
+      state_class: total_increasing
+
+    - name: Home Off Peak Cost
+      unique_id: home_off_peak_cost
+      state: "{{ states('input_number.home_off_peak_cost') | float | default(0) }}"
+      unit_of_measurement: "GBP"
+      state_class: total_increasing
+
+    - name: Home Internal Consumption Accumulator
+      unique_id: home_internal_consumption_accumulator
+      state: "{{ states('input_number.home_internal_consumption') | float | default(0) }}"
+      unit_of_measurement: "kWh"
+      state_class: total_increasing
+
+    - name: Home Internal Shadow Carbon
+      unique_id: home_internal_shadow_carbon
+      state: "{{ states('input_number.home_shadow_carbon_footprint') | float | default(0) }}"
+      unit_of_measurement: "kgCO2eq"
+      state_class: total_increasing
+
+    - name: Lighting Energy
+      unique_id: lighting_energy
+      state: "{{ (states('sensor.downstairs_lights_5_1d')| float | default(0)) + (states('sensor.kitchen_lights_11_1d') | float | default(0)) + (states('sensor.upstairs_lights_10_1d') | float | default(0)) }}"
+      unit_of_measurement: "kWh"
+      state_class: total_increasing
+
+    - name: Computer Energy
+      unique_id: computer_energy
+      state: "{{ (states('sensor.attic_sockets_9_1d')| float | default(0)) + (states('sensor.bedrooms_7_1d') | float | default(0)) }}"
+      unit_of_measurement: "kWh"
+      state_class: total_increasing
+
+    - name: Entertainment Energy
+      unique_id: entertainment_energy
+      state: "{{ (states('sensor.study_sockets_8_1d')| float | default(0)) + (states('sensor.living_room_2_1d') | float | default(0)) }}"
+      unit_of_measurement: "kWh"
+      state_class: total_increasing
+
+    - name: Cooking and Washing Energy
+      unique_id: cooking_washing_energy
+      state: "{{ (states('sensor.kitchen_sockets_1_1d')| float | default(0)) + (states('sensor.cooker_3_1d') | float | default(0)) }}"
+      unit_of_measurement: "kWh"
+      state_class: total_increasing
+
+    - name: Car Charger Energy
+      unique_id: car_charger_energy
+      state: "{{ (states('sensor.car_charger_12_1d')| float | default(0)) }}"
+      unit_of_measurement: "kWh"
+      state_class: total_increasing
+
+    - name: Other Energy
+      unique_id: other_energy
+      state: "{{ (states('sensor.immersion_heater_4_1d')| float | default(0)) + (states('sensor.hall_6_1d')| float | default(0)) }}"
+      unit_of_measurement: "kWh"
+      state_class: total_increasing

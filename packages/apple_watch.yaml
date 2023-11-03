@@ -1,0 +1,45 @@
+template:
+  - sensor:
+    - name: "Watch Summary"
+      state: "Solar/battery at {{ now().strftime('%-I:%M') }}:"
+
+    - name: "Watch Line 1"
+      state: "☀️ {{ (states('sensor.energy_production_today') | float(0) | round(1)) }} kWh"
+      
+    - name: "Watch Line 2"
+      state: "⚡️ {{ (states('sensor.solar_power_daily') | float(0) | round(1)) }} kWh"
+
+    - name: "Watch Centre GC1"
+      state: '{{ states("sensor.battery_soc") }}'
+
+    - name: "Watch Gauge GC1"
+      state: '{{ states("sensor.battery_soc") | float / 100 }}'
+
+
+    - name: "Watch Centre GC2"
+      state: '{{ states("sensor.house_net_load_30_minute_average") | float(0) | round(1) }}'
+
+    - name: "Watch Gauge GC2"
+      state: '{% if states("sensor.house_net_load_30_minute_average") | float(0) > 1.5 %}1{% else %}
+      {{ states("sensor.house_net_load_30_minute_average") | float / 1.5 }}{% endif %}'
+
+
+    - name: "Watch Centre GC3"
+      state: >-
+        {{ state_attr('binary_sensor.battery_non_viability','time_surplus') | round(0) }}
+
+    - name: "Watch Gauge GC3"
+      state: >-
+        {% set time_surplus = (state_attr('binary_sensor.battery_non_viability','time_surplus') | float ) %}
+        {% set base_load_capacity_coverage = (state_attr('binary_sensor.battery_non_viability','base_load_capacity_coverage') | float ) %}
+        {% if time_surplus > 0 %}
+        {% if time_surplus > 4 %}
+        1
+        {% else %}
+        {{ 0.5 + time_surplus /4 }}
+        {% endif %}
+        {% else %}
+        {{ base_load_capacity_coverage / 2 }}
+        {% endif %}
+
+

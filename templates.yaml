@@ -13,54 +13,6 @@
       unit_of_measurement: "%soc/hr"
       state: "25"
 
-    - name: "Watch Summary"
-      state: "Solar/battery at {{ now().strftime('%-I:%M') }}:"
-
-    - name: "Watch Line 1"
-      state: "☀️ {{ (states('sensor.energy_production_today') | float(0) | round(1)) }} kWh"
-      
-    - name: "Watch Line 2"
-      state: "⚡️ {{ (states('sensor.solar_power_daily') | float(0) | round(1)) }} kWh"
-
-    - name: "Watch Centre GC1"
-      state: '{{ states("sensor.battery_soc") }}'
-
-    - name: "Watch Gauge GC1"
-      state: '{{ states("sensor.battery_soc") | float / 100 }}'
-
-
-    - name: "Watch Centre GC2"
-      state: '{{ states("sensor.load_power") | float(0) | round(1) }}'
-
-    - name: "Watch Gauge GC2"
-      state: '{% if states("sensor.load_power") | float(0) > 1.5 %}1{% else %}
-      {{ states("sensor.load_power") | float / 1.5 }}{% endif %}'
-
-
-    - name: "Watch Centre GC3"
-      state: >-
-        {% set hours_to_next_cheap = ((as_timestamp(states.binary_sensor.battery_co2_mitigation.attributes.off_peak_next_start) - as_timestamp(now())) / 3600) %}
-        {% set battery_duration = states.binary_sensor.battery_life.attributes.time_remaining_at_current_load %}
-        {% if battery_duration > hours_to_next_cheap %}
-        {{ (battery_duration - hours_to_next_cheap) | round(1) }}
-        {% else %}
-        {{ battery_duration * 100 / hours_to_next_cheap | round(0) }}
-        {% endif %}
-
-    - name: "Watch Gauge GC3"
-      state: >-
-        {% set hours_to_next_cheap = ((as_timestamp(states.binary_sensor.battery_co2_mitigation.attributes.off_peak_next_start) - as_timestamp(now())) / 3600) %}
-        {% set battery_duration = states.binary_sensor.battery_life.attributes.time_remaining_at_current_load | float %}
-        {% if battery_duration > hours_to_next_cheap %}
-        {% set excess_hours = (battery_duration - hours_to_next_cheap) | round(0) %}
-        {% if excess_hours > 4 %}1
-        {% else %}
-        {{ 0.5 + (excess_hours) / 8 }}
-        {% endif %}
-        {% else %}
-        {{ battery_duration * 50 / hours_to_next_cheap  }}
-        {% endif %}
-
 
 
 

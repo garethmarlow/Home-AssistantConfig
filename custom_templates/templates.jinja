@@ -1,0 +1,41 @@
+## Start using template macros to improve readability of code (maybe)
+
+## Macro function to extract a list of timetabled lessons from a school calendar list
+## Edit this list to reflect all subjects studied by the child. The end of the calendar entry summary has a short code with
+## set and room number (ffs) which is hard to strip so instead we'll just match the name of each subject to the first part of
+## each event summary. This will break down if two subjects start with the same string of characters (eg English and English
+## Literature 🤷‍♂️
+
+{% macro day_subjects(events) %}
+
+{% set subjects = [
+  "English",
+  "Chemistry",
+  "Music",
+  "History",
+  "Maths",
+  "Computer Science",
+  "Biology",
+  "PE",
+  "Politics",
+  "Physics",
+  "Geography",
+  "Art and Design",
+  "Design Technology",
+  "Latin",
+  "Science",
+  "French",
+  "Performing Arts",
+  "Religious Studies"          
+] %}
+
+{% set data = namespace(now_subjects = []) %}
+{% for event in events %}
+{% for subject in subjects %}
+{% if (event.summary[0: subject | length] == subject and subject not in data.now_subjects) %}
+{% set data.now_subjects = data.now_subjects + [subject] %}
+{% endif %}
+{% endfor %}
+{% endfor %}
+{{ data.now_subjects | join(", ") }}
+{% endmacro %}

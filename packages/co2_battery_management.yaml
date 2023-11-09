@@ -131,6 +131,16 @@ automation:
             data: {}
             target:
               entity_id: input_boolean.charge_requested
+          - service: system_log.write
+            data_template:
+              level: info
+              logger: battery_co2_mitigation
+              message: >-
+                {% set battery = states.binary_sensor.battery_co2_mitigation.attributes.battery_soc %}
+                {% set forecast = states.binary_sensor.battery_co2_mitigation.attributes.carbon_forecast %}
+                {% set time_to_charge = states.binary_sensor.battery_co2_mitigation.attributes.time_to_charge %}
+                {% set current_intensity = states.binary_sensor.battery_co2_mitigation.attributes.current_intensity %}
+                CHARGING batt {{ battery }} timreq {{ time_to_charge }} curr {{ current_intensity }} forecast {{ forecast }}
         else:
           - service: foxess_modbus.update_charge_period
             data:
@@ -146,6 +156,16 @@ automation:
             data: {}
             target:
               entity_id: input_boolean.charge_requested
+          - service: system_log.write
+            data_template:
+              level: info
+              logger: battery_co2_mitigation
+              message: >-
+                {% set battery = states.binary_sensor.battery_co2_mitigation.attributes.battery_soc %}
+                {% set forecast = states.binary_sensor.battery_co2_mitigation.attributes.carbon_forecast %}
+                {% set time_to_charge = states.binary_sensor.battery_co2_mitigation.attributes.time_to_charge %}
+                {% set current_intensity = states.binary_sensor.battery_co2_mitigation.attributes.current_intensity %}
+                NOT CHARGING batt {{ battery }} timreq {{ time_to_charge }} curr {{ current_intensity }} forecast {{ forecast }}
     mode: single
 
 ## Customisations

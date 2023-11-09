@@ -1,4 +1,10 @@
+## Create some sensors which can be used as apple watch complications. Put simple configuration using the Home Assistant
+## companion app apple watch section. 
+
 template:
+
+## These are used for Graphic Rectangular Summary, Body 1 and Body 2
+
   - sensor:
     - name: "Watch Summary"
       state: "Solar/battery at {{ now().strftime('%-I:%M') }}:"
@@ -9,13 +15,17 @@ template:
     - name: "Watch Line 2"
       state: "⚡️ {{ (states('sensor.solar_power_daily') | float(0) | round(1)) }} kWh"
 
+## These are used for Graphic Circular complications (GC1-3) - Centre is the contents of the complication
+## Gauge is a float in the range 0-1 which is the ring around the complication
+
+## House battery SOC
     - name: "Watch Centre GC1"
       state: '{{ states("sensor.battery_soc") }}'
 
     - name: "Watch Gauge GC1"
       state: '{{ states("sensor.battery_soc") | float / 100 }}'
 
-
+## House load 30 minute average
     - name: "Watch Centre GC2"
       state: '{{ states("sensor.house_net_load_30_minute_average") | float(0) | round(1) }}'
 
@@ -23,10 +33,14 @@ template:
       state: '{% if states("sensor.house_net_load_30_minute_average") | float(0) > 1.5 %}1{% else %}
       {{ states("sensor.house_net_load_30_minute_average") | float / 1.5 }}{% endif %}'
 
-
+## Is there viable battery life in the home battery?
     - name: "Watch Centre GC3"
       state: >-
         {{ state_attr('binary_sensor.battery_non_viability','time_surplus') | round(0) }}
+
+## 12 o'clock (ie 0.5) is when the battery is forecast to just about last to the next off-peak period
+## if the battery won't last, show the percentage shortfall scaled 0-0.5
+## if there is surplus, scale out surplus hours up to four 0.5-1.0
 
     - name: "Watch Gauge GC3"
       state: >-

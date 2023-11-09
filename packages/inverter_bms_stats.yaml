@@ -1,5 +1,8 @@
+## Sensors to provide some solar and inverter performance statistics
+## Taken from the FoxESS community forum
+
 sensor:
-# Setup Better Solar Tracking Sensors that resolve negative solar tracking  
+## resolve negative solar flow caused by inverter self-consumption  
 
   - platform: integration
     source: sensor.foxess_pv1_power
@@ -13,26 +16,27 @@ sensor:
     state_characteristic: mean
     sampling_size: 10
     precision: 2
+
   - name: inverter_efficiency_rolling
     platform: statistics
     entity_id: sensor.inverter_efficiency
     state_characteristic: mean
     sampling_size: 24
     precision: 1
+
   - name: inverter_in_daily
     method: left
     platform: integration
     source: sensor.inverter_power_in
     unit_time: h
     round: 2
+
   - name: inverter_out_daily
     method: left
     platform: integration
     source: sensor.inverter_power_out
     unit_time: h
     round: 2    
-
-
 
 template:
   - sensor:

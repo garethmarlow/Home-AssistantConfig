@@ -19,6 +19,8 @@ input_datetime:
     has_date: true
     has_time: false
 
+## we can charge around 50% of the battery capacity during a 2-hour power-up slot, so we probably want to end the off-peak
+## period with no more than 50% plus a bit to allow for use before the charge up period starts
 input_number:
   octopus_power_up_max_soc:
     name: Octopus Power-up max SOC
@@ -28,11 +30,13 @@ input_number:
     step: 1
     mode: box
 
+## should we export excess solar before a power-up?
 input_boolean:
   octopus_power_up_solar_export:
     name: Octopus Power-up solar export
     icon: "mdi:weather-sunny-alert"
 
+## should we prevent the gas boiler from heating water so we can use the immersion heater instead?
   octopus_power_up_water_heater:
     name: Octopus Power-up use immersion heater
     icon: "mdi:thermometer-water"
@@ -40,6 +44,9 @@ input_boolean:
 
 ## Sensors
 template:
+
+## get some zulu format datetimes that we can use to trigger automations
+## 23:30 (off-peak start) the night before the power-up
   - sensor:
     - name: Octopus Power-up overnight trigger time
       unique_id: sensor.octopus_power_up_overnight_trigger_time
@@ -77,6 +84,7 @@ template:
 
 
 automation:
+## set Max SOC, export modes and configure the central heating system before off-peak starts
   - id: autidpowerupovernight
     alias: Octopus Power-up overnight configuration
     description: "Configures charge levels and modes, and prepares other devices for power up"
@@ -112,6 +120,9 @@ automation:
               entity_id: select.work_mode
     mode: single
 
+## When the power-up period starts, set max SOC to 100%, change the start and end times of FoxESS charge slot 1 to match the
+## power-up start and end times, force charge from grid and if the car is plugged in, turn on the charger and set Octopus
+## Intelligent to Bump Charge which prevents another automation from preventing the car from charging during peak hours
   - id: autidpowerupstart
     alias: Octopus Power-up period start
     description: "Starts battery and car charging and enables other power-consuming devices"
@@ -159,6 +170,8 @@ automation:
                       entity_id: switch.blue_shell_charger
     mode: single
 
+## At the end, stop the bump charge and the car charging, reset charge period 1 to a start and end time of 23:25
+## ie zero length, renable the gas boiler hot water heating
   - id: autidpowerupend
     alias: Octopus Power-up period end
     description: "Stops battery and car charging and reverts settings to normal"
@@ -192,7 +205,7 @@ automation:
     mode: single
 
 
-## Customisations
+## Customisations - add icons to the auomations
 homeassistant:
   customize:
     automation.octopus_power_up_period_start:

@@ -1,7 +1,9 @@
 *
 !*.yaml
+!*.jinja
 !scenes
 !packages
+!custom_templates
 !packages/appliance_power_monitoring
 !ui-panel
 !.gitignore

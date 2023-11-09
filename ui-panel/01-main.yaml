@@ -150,32 +150,23 @@ cards:
       grid-row: 2 / span 1
     cards:
     - type: markdown
-      content: '## Daniel'
-      style: |
-        ha-card {
-        border: none;
-        font-size: 20px;
-        }
+      content: >-
+        ## Daniel
 
-    - type: custom:atomic-calendar-revive
+        ### {{ states.sensor.next_school_days.state.split("|")[0] }}:
+        
+        {{ states.sensor.daniel_lessons_first_day.state }}
+
+        ### {{ states.sensor.next_school_days.state.split("|")[1] }}:
+        
+        {{ states.sensor.daniel_lessons_second_day.state }}
+
       style: |
         ha-card {
-        height: 240px !important;
         border: none;
-        font-size: 18px;
-        padding: 0px;
+        height: 300px !important;
+        # font-size: 20px;
         }
-      entities:
-      - entity: calendar.daniel_schedule
-        blocklist: 'Homework|Test|Deadline'
-      maxDaysToShow: 10
-      showLoader: false
-      showLocation: false
-      showWeekDay: true
-      showProgressBar: false
-      showRelativeTime: false
-      hideFinishedEvents: true
-      fullDayEventText: ""
 
   - type: custom:atomic-calendar-revive
     view_layout:
@@ -184,7 +175,7 @@ cards:
     style: |
       ha-card {
       height: 200px !important;
-      font-size: 18px;
+      font-size: 16px;
       }
     entities:
     - entity: calendar.daniel_schedule
@@ -207,33 +198,23 @@ cards:
       grid-row: 2 / span 1
     cards:
     - type: markdown
-      content: '## Rory'
+      content: >-
+        ## Rory
+
+        ### {{ states.sensor.next_school_days.state.split("|")[0] }}:
+
+        {{ states.sensor.rory_lessons_first_day.state }}
+
+        ### {{ states.sensor.next_school_days.state.split("|")[1] }}:
+
+        {{ states.sensor.rory_lessons_second_day.state }}
+
       style: |
         ha-card {
         border: none;
-        font-size: 20px;
+        height: 300px !important;
+        # font-size: 20px;
         }
-
-    - type: custom:atomic-calendar-revive
-      style: |
-        ha-card {
-        height: 240px !important;
-        border: 0px;
-        font-size: 18px;
-        }
-      entities:
-      - entity: calendar.rory_schedule
-        name: "Rory's's Timetable"
-        blocklist: 'Homework|Test|Deadline'
-      maxDaysToShow: 10
-      showLoader: false
-      showLocation: false
-      showWeekDay: true
-      showProgressBar: false
-
-      showRelativeTime: false
-      hideFinishedEvents: true
-      fullDayEventText: ""
 
   - type: custom:atomic-calendar-revive
     view_layout:
@@ -242,7 +223,7 @@ cards:
     style: |
       ha-card {
       height: 200px !important;
-      font-size: 18px;
+      font-size: 16px;
       }
     entities:
     - entity: calendar.rory_schedule
@@ -285,7 +266,7 @@ cards:
       style: |
         ha-card {
         border: none;
-        font-size: 20px;
+        # font-size: 20px;
         }
 
     - type: custom:atomic-calendar-revive
@@ -293,7 +274,7 @@ cards:
         ha-card {
         height: 445px !important;
         border: none;
-        font-size: 18px;
+        font-size: 16px;
         }
       entities:
       - entity: calendar.gareth_and_nessa_shared

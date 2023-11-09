@@ -1,0 +1,132 @@
+## Package to take ics calendar feeds from EdulinkOne (UK school timetabling system) for two kids
+## Sensor to work out the next two school days (doesn't currently understand school holidays but hey ho)
+## Then sensors to scrape the timetabled unique subjects from the calendar feed, deduplicate them and report them as a list
+## Means that the horrible duplicated lessons and extra cruft which appears in the summary (such as room number)
+## can be cleaned up to present on a dashboard to show "what subjects do I need to prepare for today/tomorrow/after the weekend?"
+## References custom_templates/templates.jinja
+
+## Create calendars using the HACS ics calendar integration
+ics_calendar:
+  calendars:
+    - name: "Daniel school schedule"
+      url: !secret daniel_calendar_url
+    - name: "Rory school schedule"
+      url: !secret rory_calendar_url
+
+## Sensor which works out whether the next two schooldays are Today and Tomorrow, or straddle the weekend
+## Also generates a date-time string in the format YYYY-MM-DD 00:00 to feed to the calendar list events service
+template:
+  - sensor:
+    - name: Next school days
+      icon: mdi:school
+      state: >-
+        {% set firstdayoffset = 0 %}
+        {% set seconddayoffset = 86400 %}
+        {% set firstdaytext = "Today" %}
+        {% set seconddaytext = "Tomorrow" %}
+        {% set weekday=now().weekday() %}
+        {% if weekday == 4 %}
+        {% set seconddaytext = "Monday" %}
+        {% set seconddayoffset = 3 * 86400 %}
+        {% elif weekday == 5 %}
+        {% set firstdayoffset = 2 * 86400 %}
+        {% set seconddayoffset = 3 * 86400 %}
+        {% set firstdaytext = "Monday" %}
+        {% set seconddaytext = "Tuesday" %}
+        {% elif weekday == 6 %}
+        {% set firstdayoffset = 86400 %}
+        {% set secondayoffset = 2 * 86400 %}
+        {% set firstdaytext = "Tomorrow" %}
+        {% set secondaytext = "Tuesday" %}
+        {% endif %}
+        {% set firstdaydt = ((as_timestamp(now()) + firstdayoffset )| timestamp_custom("%Y-%m-%d 00:00:00", true)) %}
+        {% set seconddaydt = ((as_timestamp(now()) + seconddayoffset )| timestamp_custom("%Y-%m-%d 00:00:00", true)) %}
+        {{ firstdaytext }}|{{ seconddaytext }}|{{ firstdaydt }}|{{ seconddaydt }}
+
+## List today's (or next school day's) subjects for first child - populate sensor at 00:05 each night
+  - trigger: 
+      - platform: time_pattern
+        hours: "0"
+        minutes: "5"
+    action:
+      - service: calendar.list_events
+        data:
+          duration: 
+            hours: 24
+          start_date_time: >-
+            {{ states.sensor.next_school_days.state.split("|")[2] }}
+        target:
+          entity_id: calendar.daniel_school_schedule
+        response_variable: working_schedule
+    sensor:
+      - name: Daniel lessons first day
+        icon: "mdi:account-school-outline"
+        state: >-
+          {% from 'templates.jinja' import day_subjects %}
+          {{ day_subjects(working_schedule.events) }}
+
+## List tomorrow's (or next school day but one's) subjects for first child - populate sensor at 00:05 each night
+  - trigger: 
+      - platform: time_pattern
+        hours: "0"
+        minutes: "5"
+    action:
+      - service: calendar.list_events
+        data:
+          duration: 
+            hours: 24
+          start_date_time: >-
+            {{ states.sensor.next_school_days.state.split("|")[3] }}
+        target:
+          entity_id: calendar.daniel_school_schedule
+        response_variable: working_schedule
+    sensor:
+      - name: Daniel lessons second day
+        icon: "mdi:account-school-outline"
+        state: >-
+          {% from 'templates.jinja' import day_subjects %}
+          {{ day_subjects(working_schedule.events) }}
+
+## List today's (or next school day's) subjects for second child - populate sensor at 00:05 each night
+  - trigger: 
+      - platform: time_pattern
+        hours: "0"
+        minutes: "5"
+    action:
+      - service: calendar.list_events
+        data:
+          duration: 
+            hours: 24
+          start_date_time: >-
+            {{ states.sensor.next_school_days.state.split("|")[2] }}
+        target:
+          entity_id: calendar.rory_school_schedule
+        response_variable: working_schedule
+    sensor:
+      - name: Rory lessons first day
+        icon: "mdi:account-school-outline"
+        state: >-
+          {% from 'templates.jinja' import day_subjects %}
+          {{ day_subjects(working_schedule.events) }}
+
+## List tomorrow's (or next school day but one's) subjects for second child - populate sensor at 00:05 each night
+  - trigger: 
+      - platform: time_pattern
+        hours: "0"
+        minutes: "5"
+    action:
+      - service: calendar.list_events
+        data:
+          duration: 
+            hours: 24
+          start_date_time: >-
+            {{ states.sensor.next_school_days.state.split("|")[3] }}
+        target:
+          entity_id: calendar.rory_school_schedule
+        response_variable: working_schedule
+    sensor:
+      - name: Rory lessons second day
+        icon: "mdi:account-school-outline"
+        state: >-
+          {% from 'templates.jinja' import day_subjects %}
+          {{ day_subjects(working_schedule.events) }}

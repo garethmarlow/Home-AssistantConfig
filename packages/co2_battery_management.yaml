@@ -133,10 +133,10 @@ automation:
               entity_id: input_boolean.charge_requested
           - service: system_log.write
             data_template:
-              level: info
+              level: warning
               logger: battery_co2_mitigation
               message: >-
-                {% set battery = states.binary_sensor.battery_co2_mitigation.attributes.battery_soc %}
+                {% set battery = states.binary_sensor.battery_co2_mitigation.attributes.current_soc %}
                 {% set forecast = states.binary_sensor.battery_co2_mitigation.attributes.carbon_forecast %}
                 {% set time_to_charge = states.binary_sensor.battery_co2_mitigation.attributes.time_to_charge %}
                 {% set current_intensity = states.binary_sensor.battery_co2_mitigation.attributes.current_intensity %}
@@ -158,10 +158,10 @@ automation:
               entity_id: input_boolean.charge_requested
           - service: system_log.write
             data_template:
-              level: info
+              level: warning
               logger: battery_co2_mitigation
               message: >-
-                {% set battery = states.binary_sensor.battery_co2_mitigation.attributes.battery_soc %}
+                {% set battery = states.binary_sensor.battery_co2_mitigation.attributes.current_soc %}
                 {% set forecast = states.binary_sensor.battery_co2_mitigation.attributes.carbon_forecast %}
                 {% set time_to_charge = states.binary_sensor.battery_co2_mitigation.attributes.time_to_charge %}
                 {% set current_intensity = states.binary_sensor.battery_co2_mitigation.attributes.current_intensity %}

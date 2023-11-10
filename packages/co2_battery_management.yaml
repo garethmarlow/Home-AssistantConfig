@@ -133,7 +133,7 @@ automation:
               entity_id: input_boolean.charge_requested
           - service: system_log.write
             data_template:
-              level: warning
+              level: info
               logger: battery_co2_mitigation
               message: >-
                 {% set battery = states.binary_sensor.battery_co2_mitigation.attributes.current_soc %}
@@ -158,7 +158,7 @@ automation:
               entity_id: input_boolean.charge_requested
           - service: system_log.write
             data_template:
-              level: warning
+              level: info
               logger: battery_co2_mitigation
               message: >-
                 {% set battery = states.binary_sensor.battery_co2_mitigation.attributes.current_soc %}

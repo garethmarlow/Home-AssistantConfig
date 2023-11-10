@@ -58,7 +58,7 @@ sensor:
       {% if value_json['gasMtr']['0702']['00']['00']|int(base=16) * value_json['gasMtr']['0702']['03']['01']|int(base=16) / value_json['gasMtr']['0702']['03']['02']|int(base=16) | float(0) > 91000 %}
       {{ value_json['gasMtr']['0702']['00']['00']|int(base=16) * value_json['gasMtr']['0702']['03']['01']|int(base=16) / value_json['gasMtr']['0702']['03']['02']|int(base=16) }}
       {%- else -%}
-      {{ states("sensor.home_gas_comsumption_cleaned_m3") }}
+      {{ states("sensor.home_gas_comsumption_cleaned") }}
       {% endif %}
     icon: 'mdi:counter'
     unique_id: home_gas_cleaned

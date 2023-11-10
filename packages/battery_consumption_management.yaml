@@ -32,7 +32,7 @@ template:
           {{ surplus_capacity }}
 
         time_to_next_off_peak: >-
-          {{ ((as_timestamp(states.binary_sensor.battery_co2_mitigation.attributes.off_peak_next_start ) - as_timestamp(now())) / 3600) | float(default=0.1) }}
+          {{ ((as_timestamp(states.binary_sensor.battery_co2_mitigation.attributes.off_peak_next_start | default('unavailable')) - as_timestamp(now())) / 3600) | float(default=0.1) }}
 
         energy_required_for_base_load: >-
           {{ this.attributes.time_to_next_off_peak * this.attributes.base_load }}

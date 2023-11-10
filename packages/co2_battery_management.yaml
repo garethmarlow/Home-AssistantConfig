@@ -25,8 +25,8 @@ template:
       unique_id: binary_sensor.battery_co2_mitigation
       icon: "mdi:power-plug-battery"
       state: >-
-        {% set off_peak_active = this.attributes.off_peak_active %}
-        {% set no_forecast = this.attributes.no_forecast %}
+        {% set off_peak_active = this.attributes.off_peak_active | default('unavailable') %}
+        {% set no_forecast = this.attributes.no_forecast | default('unavailable') %}
         {% set green_now = this.attributes.green_now | default('unavailable') %}
         {% if no_forecast %}
         {{ off_peak_active }}
@@ -58,7 +58,7 @@ template:
           {{ as_local(strptime(dtstring,'%Y-%m-%d %H:%M')).isoformat() }}
 
         off_peak_active: >-
-          {{ this.attributes.off_peak_next_start | as_datetime > this.attributes.off_peak_next_end | as_datetime }}
+          {{ this.attributes.off_peak_next_start | default('unavailable') | as_datetime > this.attributes.off_peak_next_end | default('unavailable') | as_datetime }}
 
         target_soc: >-
           {{ states("sensor.max_soc") | int }}
@@ -76,7 +76,7 @@ template:
           {{ this.attributes.time_to_charge | round(0,'ceil') }}
 
         whole_hours_available: >-
-          {{ ((as_timestamp(this.attributes.off_peak_next_end ) - as_timestamp(now())) / 3600) | round (0) }}
+          {{ ((as_timestamp(this.attributes.off_peak_next_end | default('unavailable') ) - as_timestamp(now())) / 3600) | round (0) }}
 
         carbon_forecast: >-
           {{ state_attr('sensor.carbon_intensity_uk','forecast')[0:this.attributes.whole_hours_available] | map(attribute='intensity') |list }}  
@@ -88,7 +88,7 @@ template:
           {{ this.attributes.carbon_forecast[0] | float }}
 
         max_chargeable_intensity: >-
-          {% set forecast = this.attributes.carbon_forecast %}
+          {% set forecast = this.attributes.carbon_forecast | default('unavailable') %}
           {% set lowest_hours = forecast | sort %}
           {% set hours_required = this.attributes.whole_hours_to_charge %}
           {{ (lowest_hours[0:(hours_required)] | sort(reverse=true))[0] | float }}

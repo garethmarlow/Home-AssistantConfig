@@ -181,14 +181,20 @@ automation:
     condition: []
     action:
       - parallel:
-          - service: switch.turn_off
-            data: {}
-            target:
-              entity_id: switch.octopus_bump_charge
-          - service: switch.turn_off
-            data: {}
-            target:
-              entity_id: switch.blue_shell_charger
+          - if:
+              - condition: state
+                entity_id: binary_sensor.blue_shell_charger
+                state: "on"
+            then:
+              - parallel:
+                  - service: switch.turn_off
+                    data: {}
+                    target:
+                      entity_id: switch.octopus_bump_charge
+                  - service: switch.turn_off
+                    data: {}
+                    target:
+                      entity_id: switch.blue_shell_charger
           - service: foxess_modbus.update_charge_period
             data:
               inverter: bb431a8f0b4902c51fdb98acdc4a6c6a

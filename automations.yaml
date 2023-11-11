@@ -11,6 +11,10 @@
       hours: 0
       minutes: 0
       seconds: 0
+  - platform: state
+    entity_id:
+    - sensor.wallbox_portal_status_description
+    to: Charging
   condition:
   - condition: device
     device_id: 5912382cb94176f76b594aa4d8945945
@@ -32,7 +36,7 @@
     domain: switch
   - condition: state
     entity_id: binary_sensor.octopus_power_up_active
-    state: 'on'
+    state: 'off'
   action:
   - type: turn_off
     device_id: 5912382cb94176f76b594aa4d8945945

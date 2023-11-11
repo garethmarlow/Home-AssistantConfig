@@ -164,31 +164,31 @@ cards:
       style: |
         ha-card {
         border: none;
-        height: 300px !important;
+        height: 220px !important;
         # font-size: 20px;
         }
 
-  - type: custom:atomic-calendar-revive
-    view_layout:
-      grid-column: 1 / 1
-      grid-row: 5 / span 1  
-    style: |
-      ha-card {
-      height: 200px !important;
-      font-size: 16px;
-      }
-    entities:
-    - entity: calendar.daniel_schedule
-      allowlist: 'Homework|Test|Deadline'
-    maxDaysToShow: 365
-    showLoader: false
-    showLocation: false
-    showWeekDay: true
-    showProgressBar: false
-    showHours: false
-#    showRelativeTime: false
-    hideFinishedEvents: true
-    fullDayEventText: ""
+    - type: custom:atomic-calendar-revive
+      view_layout:
+        grid-column: 1 / 1
+        grid-row: 5 / span 1  
+      style: |
+        ha-card {
+        height: 285px !important;
+        # font-size: 16px;
+        }
+      entities:
+      - entity: calendar.daniel_schedule
+        allowlist: 'Homework|Test|Deadline'
+      maxDaysToShow: 365
+      showLoader: false
+      showLocation: false
+      showWeekDay: true
+      showProgressBar: false
+      showHours: false
+  #    showRelativeTime: false
+      hideFinishedEvents: true
+      fullDayEventText: ""
 
 ################ COLUMN 2 - RORY
 
@@ -212,32 +212,32 @@ cards:
       style: |
         ha-card {
         border: none;
-        height: 300px !important;
+        height: 220px !important;
         # font-size: 20px;
         }
 
-  - type: custom:atomic-calendar-revive
-    view_layout:
-      grid-column: 2 / 2
-      grid-row: 5 / span 1  
-    style: |
-      ha-card {
-      height: 200px !important;
-      font-size: 16px;
-      }
-    entities:
-    - entity: calendar.rory_schedule
-      name: "Rory's's Deadlines"
-      allowlist: 'Homework|Test|Deadline'
-    maxDaysToShow: 365
-    showLoader: false
-    showLocation: false
-    showWeekDay: true
-    showProgressBar: false
-    showHours: false
-#    showRelativeTime: false
-    hideFinishedEvents: true
-    fullDayEventText: ""
+    - type: custom:atomic-calendar-revive
+      view_layout:
+        grid-column: 2 / 2
+        grid-row: 5 / span 1  
+      style: |
+        ha-card {
+        height: 285px !important;
+        # font-size: 16px;
+        }
+      entities:
+      - entity: calendar.rory_schedule
+        name: "Rory's's Deadlines"
+        allowlist: 'Homework|Test|Deadline'
+      maxDaysToShow: 365
+      showLoader: false
+      showLocation: false
+      showWeekDay: true
+      showProgressBar: false
+      showHours: false
+  #    showRelativeTime: false
+      hideFinishedEvents: true
+      fullDayEventText: ""
 
 ################ DRIVEWAY LIVE CAM
 
@@ -274,7 +274,7 @@ cards:
         ha-card {
         height: 445px !important;
         border: none;
-        font-size: 16px;
+        # font-size: 16px;
         }
       entities:
       - entity: calendar.gareth_and_nessa_shared

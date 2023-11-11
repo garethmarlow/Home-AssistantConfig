@@ -86,6 +86,8 @@ lovelace:
       type: module
     - url: /hacsfiles/bar-card/bar-card.js
       type: module
+    - url: /hacsfiles/mini-graph-card/mini-graph-card-bundle.js
+      type: module
 
   # Add extra yaml dashboards
   dashboards:

@@ -6,7 +6,7 @@ template:
       state_class: total_increasing
       unique_id: home_electrity_import
       icon: 'mdi:counter'
-      state: "{{ unavailable }}"
+      state: "unavailable"
 
     - name: Home Energy
       unique_id: home_energy

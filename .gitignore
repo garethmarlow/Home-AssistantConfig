@@ -4,9 +4,10 @@
 !scenes
 !packages
 !custom_templates
-!packages/appliance_power_monitoring
 !packages/household
+!packages/appliance_power_monitoring
 !packages/energy_management
+!packages/energy_management/appliance_power_monitoring
 !ui-panel
 !.gitignore
 config_ic3.yaml

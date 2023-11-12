@@ -5,6 +5,8 @@
 !packages
 !custom_templates
 !packages/appliance_power_monitoring
+!packages/household
+!packages/energy_management
 !ui-panel
 !.gitignore
 config_ic3.yaml

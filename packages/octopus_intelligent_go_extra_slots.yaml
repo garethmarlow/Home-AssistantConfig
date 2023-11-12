@@ -1,0 +1,76 @@
+## Sometimes we get Octopus Intelligent slots outside of off-peak hours
+## this package detects when they happen, and charges the house battery too
+## Inspired by https://foxesscommunity.com/viewtopic.php?t=445
+
+## Sensors
+template:
+  - binary_sensor:
+    - name: Octopus Intelligent Go peak-time slot
+      unique_id: binary_sensor.octopus_intelligent_go_peak_time_slot
+      state: >-
+        {{ (this.attributes.slot_details | default("unavailable")).split('|')[0]  }}
+      attributes:
+        start_time: >-
+          {{ this.attributes.slot_details.split('|')[1] }}
+        end_time: >-
+          {{ this.attributes.slot_details.split('|')[2] }}
+        slot_details: >-
+          {% set a=namespace() %}
+          {% set a.start=0 %}
+          {% set a.end=0 %}
+          {% set a.starttime='23:25:00' %}
+          {% set a.endtime='23:25:00' %}
+          {% set a.match=false %}
+          {% if is_state_attr('binary_sensor.battery_co2_mitigation','off_peak_active',false) %}
+            {% if state_attr('binary_sensor.octopus_energy_intelligent_dispatching', 'planned_dispatches') | length > 0 %} 
+              {%- for dispatch in state_attr('binary_sensor.octopus_energy_intelligent_dispatching', 'planned_dispatches') -%} 
+                {% set a.start = dispatch.start | as_local %}
+                {% set a.end = dispatch.end | as_local  %}
+                {% set temp = now() %}
+                {% if temp >= a.start and temp <= a.end %}
+                  {% set a.match = true %}
+                  {% set a.starttime = a.start | as_local | strftime('%H:%M:%S') %} 
+                  {% set a.endtime = a.end | as_local | strftime('%H:%M:%S') %} 
+                {% endif %}
+              {%- endfor %} 
+            {%- endif  %}
+          {%- endif  %}
+          {{ a.match }}|{{ a.starttime }}|{{ a.endtime }}
+
+## Automations
+automation:
+  - id: autidoctopusintelligentgopeakslot
+    alias: Octopus Intelligent Go peak period slot management
+    description: "Charges the house battery if an Octopus Intelligent Go slot occurs in peak time"
+    mode: single
+    trigger:
+      - platform: state
+        entity_id:
+          - binary_sensor.octopus_intelligent_go_peak_time_slot
+        to: "on"
+      - platform: state
+        entity_id:
+          - binary_sensor.octopus_intelligent_go_peak_time_slot
+        to: "off"
+    condition:
+      - condition: state
+        entity_id: binary_sensor.octopus_power_up_active
+        state: "off"
+    action:
+      # - service: foxess_modbus.update_charge_period
+      #   data:
+      #     inverter: bb431a8f0b4902c51fdb98acdc4a6c6a
+      #     enable_force_charge: true
+      #     enable_charge_from_grid: true
+      #     start: >-
+      #       {{ states.binary_sensor.octopus_intelligent_go_peak_time_slot.attributes.start_time }}
+      #     end: >-
+      #       {{ states.binary_sensor.octopus_intelligent_go_peak_time_slot.attributes.end_time }}
+      #     charge_period: "1"
+      - service: system_log.write
+        data_template:
+          level: info
+          logger: octopus_intelligent_go
+          message: >-
+            Intelligent start {{ states.binary_sensor.octopus_intelligent_go_peak_time_slot.attributes.start_time }} end {{ states.binary_sensor.octopus_intelligent_go_peak_time_slot.attributes.end_time }}
+

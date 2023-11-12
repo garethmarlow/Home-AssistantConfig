@@ -35,9 +35,9 @@ template:
         {% set seconddaytext = "Tuesday" %}
         {% elif weekday == 6 %}
         {% set firstdayoffset = 86400 %}
-        {% set secondayoffset = 2 * 86400 %}
+        {% set seconddayoffset = 2 * 86400 %}
         {% set firstdaytext = "Tomorrow" %}
-        {% set secondaytext = "Tuesday" %}
+        {% set seconddaytext = "Tuesday" %}
         {% endif %}
         {% set firstdaydt = ((as_timestamp(now()) + firstdayoffset )| timestamp_custom("%Y-%m-%d 00:00:00", true)) %}
         {% set seconddaydt = ((as_timestamp(now()) + seconddayoffset )| timestamp_custom("%Y-%m-%d 00:00:00", true)) %}

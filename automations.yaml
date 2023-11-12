@@ -427,3 +427,38 @@
     target:
       device_id: 7b65104762e00030c99ffba8adb37c59
   mode: single
+- id: '1699727729502'
+  alias: Mac mini status lamp
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - binary_sensor.gareths_mac_mini_camera_in_use
+    from: 'off'
+    to: 'on'
+  - platform: state
+    entity_id:
+    - binary_sensor.gareths_mac_mini_camera_in_use
+    from: 'on'
+    to: 'off'
+  condition: []
+  action:
+  - if:
+    - condition: state
+      entity_id: binary_sensor.gareths_mac_mini_camera_in_use
+      state: 'on'
+    then:
+    - service: scene.turn_on
+      target:
+        entity_id: scene.mac_mini_camera_active
+      metadata: {}
+  - if:
+    - condition: state
+      entity_id: binary_sensor.gareths_mac_mini_camera_in_use
+      state: 'off'
+    then:
+    - service: scene.turn_on
+      target:
+        entity_id: scene.mac_mini_camera_inactive
+      metadata: {}
+  mode: single

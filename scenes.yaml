@@ -579,3 +579,63 @@
     light.common_area_lights:
       entity_only: true
   icon: mdi:weather-night
+- id: '1699728161321'
+  name: Mac mini camera active
+  entities:
+    light.top_floor_landing:
+      min_color_temp_kelvin: 2000
+      max_color_temp_kelvin: 6535
+      min_mireds: 153
+      max_mireds: 500
+      supported_color_modes:
+      - brightness
+      - color_temp
+      - hs
+      supported_features: 0
+      color_mode: hs
+      brightness: 255
+      hs_color:
+      - 1.003
+      - 100
+      rgb_color:
+      - 255
+      - 4
+      - 0
+      xy_color:
+      - 0.7
+      - 0.3
+      friendly_name: Top Floor Landing
+      state: 'on'
+  icon: mdi:camera
+  metadata: {}
+- id: '1699728214156'
+  name: Mac mini camera inactive
+  entities:
+    light.top_floor_landing:
+      min_color_temp_kelvin: 2000
+      max_color_temp_kelvin: 6535
+      min_mireds: 153
+      max_mireds: 500
+      supported_color_modes:
+      - brightness
+      - color_temp
+      - hs
+      supported_features: 0
+      color_mode: color_temp
+      brightness: 255
+      hs_color:
+      - 54.768
+      - 1.6
+      rgb_color:
+      - 255
+      - 254
+      - 250
+      xy_color:
+      - 0.326
+      - 0.333
+      friendly_name: Top Floor Landing
+      color_temp_kelvin: 6535
+      color_temp: 153
+      state: 'on'
+  icon: mdi:camera
+  metadata: {}

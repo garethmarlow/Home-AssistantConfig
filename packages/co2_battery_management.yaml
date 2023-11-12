@@ -81,9 +81,6 @@ template:
         carbon_forecast: >-
           {{ state_attr('sensor.carbon_intensity_uk','forecast')[0:this.attributes.whole_hours_available] | map(attribute='intensity') |list }}  
 
-
-#         {# state_attr('sensor.grid_co2_uk_local_co2_intensity_forecast_48h','forecast')[0:this.attributes.whole_hours_available] | map(attribute='intensity') |list #}
-
         current_intensity: >-
           {{ this.attributes.carbon_forecast[0] | float }}
 
@@ -96,10 +93,18 @@ template:
         no_forecast: >-
           {{ True if state_attr('sensor.carbon_intensity_uk','forecast') is none else False }}
 
+## Charge if this is one of the lowest carbon intensity slots, also keep force charge enabled
+## if we reach max_soc otherwise the battery will drain slightly before the end of off peak 
         green_now: >-
           {% set current_intensity = this.attributes.current_intensity %}
           {% set max_chargeable_intensity = this.attributes.max_chargeable_intensity %}
+          {% set current_soc = this.attributes.current_soc %}
+          {% set target_soc = this.attributes.target_soc %}
+          {% if current_soc == target_soc %}
+          True
+          {% else %}
           {{ current_intensity <= max_chargeable_intensity }}
+          {% endif %}
 
 automation:
   - alias: CO2 Battery Management

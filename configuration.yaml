@@ -133,13 +133,6 @@ influxdb:
       - persistent_notification
       - person
 
-waste_collection_schedule:
-  sources:
-    - name: cambridge_gov_uk
-      args:
-        post_code: CB43SB
-        number: 119
-
 evohome:
   username: !secret evohome_username
   password: !secret evohome_password

@@ -1,0 +1,27 @@
+waste_collection_schedule:
+  sources:
+    - name: cambridge_gov_uk
+      args:
+        post_code: CB43SB
+        number: 119
+
+
+sensor:
+  - platform: waste_collection_schedule
+    name: Next Bin Collection
+    value_template: '{% if value.daysTo == 0 %}Today{% elif value.daysTo == 1 %}Tomorrow{% else %}{{value.date.strftime("%A")}}{% endif %}|{{value.types[0]}}|{{value.types[1]}}'
+
+  - platform: waste_collection_schedule
+    name: Black Bin Collection
+    types: 
+      - Domestic
+
+  - platform: waste_collection_schedule
+    name: Blue Bin Collection
+    types: 
+      - Recycle
+
+  - platform: waste_collection_schedule
+    name: Green Bin Collection
+    types: 
+      - Organic

@@ -29,8 +29,8 @@ template:
                 {% set temp = now() %}
                 {% if temp >= a.start and temp <= a.end %}
                   {% set a.match = true %}
-                  {% set a.starttime = a.start | as_local | strftime('%H:%M:%S') %} 
-                  {% set a.endtime = a.end | as_local | strftime('%H:%M:%S') %} 
+                  {% set a.starttime = (a.start | as_local).strftime('%H:%M:%S') %} 
+                  {% set a.endtime = (a.end | as_local).strftime('%H:%M:%S') %} 
                 {% endif %}
               {%- endfor %} 
             {%- endif  %}

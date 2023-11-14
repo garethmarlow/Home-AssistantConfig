@@ -2,25 +2,11 @@
   alias: Stop Peak Rate Charging
   description: ''
   trigger:
-  - platform: device
-    type: turned_on
-    device_id: 5912382cb94176f76b594aa4d8945945
-    entity_id: switch.blue_shell_charger
-    domain: switch
-    for:
-      hours: 0
-      minutes: 0
-      seconds: 0
   - platform: state
     entity_id:
     - sensor.wallbox_portal_status_description
     to: Charging
   condition:
-  - condition: device
-    device_id: 5912382cb94176f76b594aa4d8945945
-    domain: device_tracker
-    entity_id: device_tracker.blue_shell_location_tracker
-    type: is_home
   - condition: time
     after: 05:30:00
     before: '23:30:00'

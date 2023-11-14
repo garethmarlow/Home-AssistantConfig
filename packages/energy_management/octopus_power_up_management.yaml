@@ -201,7 +201,7 @@ automation:
               enable_force_charge: false
               enable_charge_from_grid: false
               start: '23:25:00'
-              end: '23:25:00'
+              end: '23:26:00'
               charge_period: '1'
           - service: water_heater.set_operation_mode
             data:

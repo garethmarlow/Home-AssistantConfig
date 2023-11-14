@@ -19,7 +19,7 @@ template:
           {% set a.start=0 %}
           {% set a.end=0 %}
           {% set a.starttime='23:25:00' %}
-          {% set a.endtime='23:25:00' %}
+          {% set a.endtime='23:26:00' %}
           {% set a.match=false %}
           {% if is_state_attr('binary_sensor.battery_co2_mitigation','off_peak_active',false) %}
             {% if state_attr('binary_sensor.octopus_energy_intelligent_dispatching', 'planned_dispatches') | length > 0 %} 
@@ -29,8 +29,8 @@ template:
                 {% set temp = now() %}
                 {% if temp >= a.start and temp <= a.end %}
                   {% set a.match = true %}
-                  {% set a.starttime = (a.start | as_local).strftime('%H:%M:%S') %} 
-                  {% set a.endtime = (a.end | as_local).strftime('%H:%M:%S') %} 
+                  {% set a.starttime = (a.start | as_local).strftime('%H:%M:00') %} 
+                  {% set a.endtime = (a.end | as_local).strftime('%H:%M:00') %} 
                 {% endif %}
               {%- endfor %} 
             {%- endif  %}
@@ -42,31 +42,37 @@ automation:
   - id: autidoctopusintelligentgopeakslot
     alias: Octopus Intelligent Go peak period slot management
     description: "Charges the house battery if an Octopus Intelligent Go slot occurs in peak time"
-    mode: single
+    mode: restart
     trigger:
+      # - platform: state
+      #   entity_id:
+      #     - binary_sensor.octopus_intelligent_go_peak_time_slot
+      #   to: "on"
+      # - platform: state
+      #   entity_id:
+      #     - binary_sensor.octopus_intelligent_go_peak_time_slot
+      #   to: "off"
       - platform: state
         entity_id:
           - binary_sensor.octopus_intelligent_go_peak_time_slot
-        to: "on"
-      - platform: state
-        entity_id:
-          - binary_sensor.octopus_intelligent_go_peak_time_slot
-        to: "off"
+        attribute: start_time
     condition:
       - condition: state
         entity_id: binary_sensor.octopus_power_up_active
         state: "off"
     action:
-      # - service: foxess_modbus.update_charge_period
-      #   data:
-      #     inverter: bb431a8f0b4902c51fdb98acdc4a6c6a
-      #     enable_force_charge: true
-      #     enable_charge_from_grid: true
-      #     start: >-
-      #       {{ states.binary_sensor.octopus_intelligent_go_peak_time_slot.attributes.start_time }}
-      #     end: >-
-      #       {{ states.binary_sensor.octopus_intelligent_go_peak_time_slot.attributes.end_time }}
-      #     charge_period: "1"
+      - service: foxess_modbus.update_charge_period
+        data:
+          inverter: bb431a8f0b4902c51fdb98acdc4a6c6a
+          enable_force_charge: >-
+            {{ "true" if (is_state('binary_sensor.octopus_intelligent_go_peak_time_slot','On')) else "false" }}
+          enable_charge_from_grid: >-
+            {{ "true" if (is_state('binary_sensor.octopus_intelligent_go_peak_time_slot','On')) else "false" }}
+          start: >-
+            {{ states.binary_sensor.octopus_intelligent_go_peak_time_slot.attributes.start_time }}
+          end: >-
+            {{ states.binary_sensor.octopus_intelligent_go_peak_time_slot.attributes.end_time }}
+          charge_period: "1"
       - service: system_log.write
         data_template:
           level: info

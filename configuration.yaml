@@ -144,7 +144,7 @@ logger:
     homeassistant.components.mqtt.sensor: error
     homeassistant.components.songpal.media_player: error
     battery_co2_mitigation: info
-    custom_components.battery_co2_mitigation: info
+    octopus_intelligent_go: info
     
 
 device_tracker:

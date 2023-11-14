@@ -198,7 +198,7 @@ automation:
           - service: foxess_modbus.update_charge_period
             data:
               inverter: bb431a8f0b4902c51fdb98acdc4a6c6a
-              enable_force_charge: false
+              enable_force_charge: true
               enable_charge_from_grid: false
               start: '23:25:00'
               end: '23:26:00'

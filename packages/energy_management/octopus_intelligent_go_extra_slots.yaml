@@ -64,10 +64,9 @@ automation:
       - service: foxess_modbus.update_charge_period
         data:
           inverter: bb431a8f0b4902c51fdb98acdc4a6c6a
-          enable_force_charge: >-
-            {{ "true" if (is_state('binary_sensor.octopus_intelligent_go_peak_time_slot','On')) else "false" }}
+          enable_force_charge: true
           enable_charge_from_grid: >-
-            {{ "true" if (is_state('binary_sensor.octopus_intelligent_go_peak_time_slot','On')) else "false" }}
+            {{ true if (is_state('binary_sensor.octopus_intelligent_go_peak_time_slot','On')) else false }}
           start: >-
             {{ states.binary_sensor.octopus_intelligent_go_peak_time_slot.attributes.start_time }}
           end: >-
@@ -78,5 +77,9 @@ automation:
           level: info
           logger: octopus_intelligent_go
           message: >-
-            Intelligent start {{ states.binary_sensor.octopus_intelligent_go_peak_time_slot.attributes.start_time }} end {{ states.binary_sensor.octopus_intelligent_go_peak_time_slot.attributes.end_time }}
+            {% if (is_state('binary_sensor.octopus_intelligent_go_peak_time_slot','On')) %}
+            Peak time IO charge between {{ states.binary_sensor.octopus_intelligent_go_peak_time_slot.attributes.start_time }} and {{ states.binary_sensor.octopus_intelligent_go_peak_time_slot.attributes.end_time }}
+            {% else %}
+            Peak time IO charge reset
+            {% endif %}
 

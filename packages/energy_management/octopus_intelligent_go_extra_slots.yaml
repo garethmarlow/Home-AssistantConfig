@@ -22,8 +22,8 @@ template:
           {% set a.endtime='23:26:00' %}
           {% set a.match=false %}
           {% if is_state_attr('binary_sensor.battery_co2_mitigation','off_peak_active',false) %}
-            {% if state_attr('binary_sensor.octopus_energy_intelligent_dispatching', 'planned_dispatches') | length > 0 %} 
-              {%- for dispatch in state_attr('binary_sensor.octopus_energy_intelligent_dispatching', 'planned_dispatches') -%} 
+            {% if state_attr('binary_sensor.octopus_energy_a_acddc775_intelligent_dispatching', 'planned_dispatches') | length > 0 %} 
+              {%- for dispatch in state_attr('binary_sensor.octopus_energy_a_acddc775_intelligent_dispatching', 'planned_dispatches') -%} 
                 {% set a.start = dispatch.start | as_local %}
                 {% set a.end = dispatch.end | as_local  %}
                 {% set temp = now() %}
@@ -66,7 +66,7 @@ automation:
           inverter: bb431a8f0b4902c51fdb98acdc4a6c6a
           enable_force_charge: true
           enable_charge_from_grid: >-
-            {{ true if (is_state('binary_sensor.octopus_intelligent_go_peak_time_slot','On')) else false }}
+            {{ true if (is_state('binary_sensor.octopus_intelligent_go_peak_time_slot','on')) else false }}
           start: >-
             {{ states.binary_sensor.octopus_intelligent_go_peak_time_slot.attributes.start_time }}
           end: >-

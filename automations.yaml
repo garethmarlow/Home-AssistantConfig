@@ -448,3 +448,26 @@
         entity_id: scene.mac_mini_camera_inactive
       metadata: {}
   mode: single
+- id: '1700263955237'
+  alias: Front Doorbell
+  description: ''
+  trigger:
+  - type: turned_on
+    platform: device
+    device_id: af82067c3edd79bc6f1c7652e9ad061b
+    entity_id: 9cc1c9e056049009e5344c65f88d647a
+    domain: binary_sensor
+  condition: []
+  action:
+  - service: notify.mobile_app_gareths_iphone
+    data:
+      message: Test message.
+      title: Front Doorbell
+      data:
+        image: http://192.168.2.64/cgi-bin/api.cgi?cmd=Snap&channel=0&rs=wuuPhkmUCel9WG79&user=admin&password=5np3xX77C!9Gyc4K
+        entity_id: camera.192_168_2_64
+        actions:
+        - action: URI
+          title: Open Cameras
+          uri: http://192.168.1.5:8123/lovelace-tablet/secure
+  mode: single

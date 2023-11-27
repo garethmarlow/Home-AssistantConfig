@@ -152,4 +152,4 @@ device_tracker:
     username: !secret icloud3_username
     password: !secret icloud3_password
 
-
+lovelace_gen:

@@ -305,7 +305,7 @@ cards:
           - show_name: true
             show_icon: true
             type: button
-            icon: mdi:toggle-switch
+            icon: mdi:radiator
             tap_action:
               action: navigate
               navigation_path: /lovelace-panel/3?wp_enabled=true

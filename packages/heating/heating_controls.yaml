@@ -1,0 +1,77 @@
+## Set up timers to allow boost heating
+
+timer:
+  kitchen_boost:
+  gym_boost:
+  laundry_boost:
+  living_room_boost:
+  study_boost:
+  main_bedroom_boost:
+  daniel_s_room_boost:
+  rory_s_room_boost:
+  bathroom_boost:
+  shower_room_boost:
+  attic_study_boost:
+  elly_s_room_boost:
+  dhw_controller_boost:
+
+script:
+  evohome_zone_boost_management:
+    alias: Evohome zone boost management
+    sequence:
+      - variables:
+          water: >-
+            {% if evohome_zone == 'dhw_controller' %} True {% else %} False {% endif
+            %}
+          entity: >-
+            {% if water %} {% set entity = 'water_heater.' + evohome_zone %} {% else
+            %} {% set entity = 'climate.' + evohome_zone %} {% endif %} {{ entity }}
+          timer_entity: >-
+            {% set timer_entity = 'timer.' + evohome_zone + '_boost' %}  {{
+            timer_entity }}
+      - if:
+          - condition: template
+            value_template: "{{ is_state(timer_entity,'active') }}"
+        then:
+          - service: timer.finish
+            data: {}
+            target:
+              entity_id: "{{ timer_entity }}"
+          - if:
+              - condition: template
+                value_template: "{{ water }}"
+            then:
+              - service: water_heater.set_operation_mode
+                data:
+                  operation_mode: "Auto"
+                target:
+                  entity_id: "{{ entity }}"
+            else:
+              - service: evohome.clear_zone_override
+                data:
+                  entity_id: "{{ entity }}"
+        else:
+          - service: timer.start
+            data:
+              duration: "01:00"
+            target:
+              entity_id: "{{ timer_entity }}"
+          - if:
+              - condition: template
+                value_template: "{{ water }}"
+            then:
+              - service: water_heater.set_operation_mode
+                data:
+                  operation_mode: "on"
+                target:
+                  entity_id: "{{ entity }}"
+            else:
+              - service: evohome.set_zone_override
+                data:
+                  entity_id: "{{ entity }}"
+                  setpoint: 21
+                  duration:
+                    minutes: 60
+    mode: parallel
+    icon: mdi:radiator
+    max: 5

@@ -1,0 +1,36 @@
+automation:
+  - alias: Commuting climate control
+    id: autidcommutingclimatecontrol
+    description: "Manage climate control and defrost on days when Nessa commutes"
+    trigger:
+      - platform: time
+        at: "07:35:00"
+    condition:
+      - condition: state
+        entity_id: binary_sensor.workday_sensor
+        state: "on"
+      - or:
+        - condition: template
+          value_template: "{{ state_attr('weather.forecast_home','temperature') < 0 }}"
+        - condition: template
+          value_template: "{{ state_attr('weather.forecast_home','temperature') > 25 }}"
+    action:
+      - if:
+        - condition: template
+          value_template: "{{ state_attr('weather.forecast_home','temperature') < 0 }}"
+        then:
+        - service: switch.turn_on
+          data: {}
+          target:
+            entity_id: switch.blue_shell_defrost
+        else:
+        - if:
+          - condition: template
+            value_template: "{{ state_attr('weather.forecast_home','temperature') > 25 }}"
+          then:
+          - service: switch.turn_on
+            data: {}
+            target:
+              entity_id: switch.blue_shell_climate
+
+    mode: single

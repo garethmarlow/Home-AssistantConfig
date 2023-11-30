@@ -9,6 +9,7 @@
 !packages/energy_management
 !packages/energy_management/appliance_power_monitoring
 !packages/heating
+!packages/car
 !ui-panel
 !.gitignore
 config_ic3.yaml

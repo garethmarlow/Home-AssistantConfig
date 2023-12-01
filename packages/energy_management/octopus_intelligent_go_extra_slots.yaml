@@ -77,9 +77,5 @@ automation:
           level: info
           logger: octopus_intelligent_go
           message: >-
-            {% if (is_state('binary_sensor.octopus_intelligent_go_peak_time_slot','On')) %}
-            Peak time IO charge between {{ states.binary_sensor.octopus_intelligent_go_peak_time_slot.attributes.start_time }} and {{ states.binary_sensor.octopus_intelligent_go_peak_time_slot.attributes.end_time }}
-            {% else %}
-            Peak time IO charge reset
-            {% endif %}
+            Peak time IO charge window status: {{ states.binary_sensor.octopus_intelligent_go_peak_time_slot.state }} between {{ states.binary_sensor.octopus_intelligent_go_peak_time_slot.attributes.start_time }} and {{ states.binary_sensor.octopus_intelligent_go_peak_time_slot.attributes.end_time }}
 

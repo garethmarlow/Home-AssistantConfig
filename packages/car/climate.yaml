@@ -15,6 +15,10 @@ automation:
         - condition: template
           value_template: "{{ state_attr('weather.forecast_home','temperature') > 25 }}"
     action:
+      - service: switch.turn_off
+        data: {}
+        target:
+          entity_id: switch.wallbox_portal_pause_resume
       - if:
         - condition: template
           value_template: "{{ state_attr('weather.forecast_home','temperature') < 0 }}"
@@ -32,5 +36,11 @@ automation:
             data: {}
             target:
               entity_id: switch.blue_shell_climate
+      - delay:
+          minutes: 30
+      - service: switch.turn_on
+        data: {}
+        target:
+          entity_id: switch.wallbox_portal_pause_resume
 
     mode: single

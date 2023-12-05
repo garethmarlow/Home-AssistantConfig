@@ -1,0 +1,55 @@
+automation:
+  - alias: Stop Peak Rate Charging
+    description: "Disables car charging if plugged in during peak rate and Intelligent Octopus Go charging window has closed"
+    trigger:
+      - platform: state
+        entity_id:
+          - sensor.wallbox_portal_status_description
+        to: Charging
+    condition:
+      - condition: time
+        after: "11:00:00"
+        before: "23:30:00"
+      - type: is_off
+        condition: device
+        device_id: eededf10b60d7d71d55d94b2517eecfd
+        entity_id: binary_sensor.octopus_intelligent_slot
+        domain: binary_sensor
+      - condition: device
+        type: is_off
+        device_id: eededf10b60d7d71d55d94b2517eecfd
+        entity_id: switch.octopus_bump_charge
+        domain: switch
+      - condition: state
+        entity_id: binary_sensor.octopus_power_up_active
+        state: "off"
+    action:
+      - type: turn_off
+        device_id: 5912382cb94176f76b594aa4d8945945
+        entity_id: switch.blue_shell_charger
+        domain: switch
+    mode: single
+
+  - alias: Turn on car charger
+    description: Turn on the car charger to create a schedule if this hasn't already happened
+    trigger:
+      - platform: time
+        at: "00:15:00"
+    condition:
+      - type: is_plugged_in
+        condition: device
+        device_id: 5912382cb94176f76b594aa4d8945945
+        entity_id: binary_sensor.blue_shell_charger
+        domain: binary_sensor
+      - condition: device
+        type: is_off
+        device_id: 5912382cb94176f76b594aa4d8945945
+        entity_id: switch.blue_shell_charger
+        domain: switch
+    action:
+      - service: switch.turn_on
+        data: {}
+        target:
+          entity_id: switch.blue_shell_charger
+    mode: single
+

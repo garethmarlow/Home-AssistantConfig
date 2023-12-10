@@ -67,7 +67,7 @@ template:
           {{ states("sensor.battery_soc") | int }}
 
         charge_rate: >-
-          {{ 25 }}
+          {{ 22 }}
 
         time_to_charge: >-
           {{ (this.attributes.target_soc  - this.attributes.current_soc) / this.attributes.charge_rate }}

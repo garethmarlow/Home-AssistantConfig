@@ -309,3 +309,150 @@
           title: Open Cameras
           uri: http://192.168.1.5:8123/lovelace-tablet/secure
   mode: single
+- id: '1706798169767'
+  alias: Shower Room Motion Detected
+  description: ''
+  trigger:
+  - type: motion
+    platform: device
+    device_id: 23ff51224816a76c9bfb1e66a19798d5
+    entity_id: 759765dcb0bc71e338df7713e38015ef
+    domain: binary_sensor
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 0
+  condition: []
+  action:
+  - service: light.turn_on
+    metadata: {}
+    data: {}
+    target:
+      entity_id: light.shower_room
+  mode: single
+- id: '1706798261202'
+  alias: Shower Room Motion Cleared
+  description: ''
+  trigger:
+  - type: no_motion
+    platform: device
+    device_id: 23ff51224816a76c9bfb1e66a19798d5
+    entity_id: 759765dcb0bc71e338df7713e38015ef
+    domain: binary_sensor
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
+  condition: []
+  action:
+  - service: light.turn_off
+    target:
+      entity_id:
+      - light.shower_room
+    data: {}
+  mode: single
+- id: '1706798403065'
+  alias: Top Floor Landing Motion Detected
+  description: ''
+  trigger:
+  - type: motion
+    platform: device
+    device_id: 2b3b99ce4895b097b1f9983445aef4a8
+    entity_id: 520f0a53e12ad08cfc3ac8b6b10d3159
+    domain: binary_sensor
+  condition: []
+  action:
+  - service: light.turn_on
+    metadata: {}
+    data: {}
+    target:
+      entity_id: light.top_floor_landing_2
+  mode: single
+- id: '1706798501485'
+  alias: Top Floor Landing Motion Cleared
+  description: ''
+  trigger:
+  - type: no_motion
+    platform: device
+    device_id: 2b3b99ce4895b097b1f9983445aef4a8
+    entity_id: 520f0a53e12ad08cfc3ac8b6b10d3159
+    domain: binary_sensor
+    for:
+      hours: 0
+      minutes: 1
+      seconds: 0
+  condition: []
+  action:
+  - service: light.turn_off
+    target:
+      entity_id:
+      - light.top_floor_landing_2
+    data: {}
+  mode: single
+- id: '1706798745365'
+  alias: Elly's Room Lights On
+  description: ''
+  trigger:
+  - device_id: 98635ebb80db3abbb5b1a492193a2116
+    domain: zha
+    platform: device
+    type: remote_button_short_press
+    subtype: turn_on
+  condition: []
+  action:
+  - service: light.turn_on
+    metadata: {}
+    data: {}
+    target:
+      entity_id: light.ellys_room
+  mode: single
+- id: '1706798801938'
+  alias: Elly's Room Lights turn off
+  description: ''
+  trigger:
+  - device_id: 98635ebb80db3abbb5b1a492193a2116
+    domain: zha
+    platform: device
+    type: remote_button_short_press
+    subtype: turn_off
+  condition: []
+  action:
+  - service: light.turn_off
+    target:
+      entity_id:
+      - light.ellys_room
+    data: {}
+  mode: single
+- id: '1707571893248'
+  alias: Landing Motion Detected
+  description: ''
+  trigger:
+  - type: motion
+    platform: device
+    device_id: 9d726ed91273f2898b25d49526446cd1
+    entity_id: 3ba79564a4ee69f2b145d46379c7095f
+    domain: binary_sensor
+  condition: []
+  action:
+  - service: light.turn_on
+    metadata: {}
+    data: {}
+    target:
+      entity_id: light.landing
+  mode: single
+- id: '1707571962952'
+  alias: Landing Motion Cleared
+  description: ''
+  trigger:
+  - type: no_motion
+    platform: device
+    device_id: 9d726ed91273f2898b25d49526446cd1
+    entity_id: 3ba79564a4ee69f2b145d46379c7095f
+    domain: binary_sensor
+  condition: []
+  action:
+  - service: light.turn_off
+    data: {}
+    target:
+      entity_id: light.landing
+  mode: single

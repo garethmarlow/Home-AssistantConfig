@@ -43,13 +43,12 @@ template:
         {% set seconddaydt = ((as_timestamp(now()) + seconddayoffset )| timestamp_custom("%Y-%m-%d 00:00:00", true)) %}
         {{ firstdaytext }}|{{ seconddaytext }}|{{ firstdaydt }}|{{ seconddaydt }}
 
-## List today's (or next school day's) subjects for first child - populate sensor at 00:05 each night
   - trigger: 
       - platform: time_pattern
         hours: "0"
         minutes: "5"
     action:
-      - service: calendar.list_events
+      - service: calendar.get_events
         data:
           duration: 
             hours: 24
@@ -63,7 +62,7 @@ template:
         icon: "mdi:account-school-outline"
         state: >-
           {% from 'templates.jinja' import day_subjects %}
-          {{ day_subjects(working_schedule.events) }}
+          {{ day_subjects(working_schedule['calendar.daniel_school_schedule'].events) }}
 
 ## List tomorrow's (or next school day but one's) subjects for first child - populate sensor at 00:05 each night
   - trigger: 
@@ -71,7 +70,7 @@ template:
         hours: "0"
         minutes: "5"
     action:
-      - service: calendar.list_events
+      - service: calendar.get_events
         data:
           duration: 
             hours: 24
@@ -85,7 +84,7 @@ template:
         icon: "mdi:account-school-outline"
         state: >-
           {% from 'templates.jinja' import day_subjects %}
-          {{ day_subjects(working_schedule.events) }}
+          {{ day_subjects(working_schedule['calendar.daniel_school_schedule'].events) }}
 
 ## List today's (or next school day's) subjects for second child - populate sensor at 00:05 each night
   - trigger: 
@@ -93,7 +92,7 @@ template:
         hours: "0"
         minutes: "5"
     action:
-      - service: calendar.list_events
+      - service: calendar.get_events
         data:
           duration: 
             hours: 24
@@ -107,7 +106,7 @@ template:
         icon: "mdi:account-school-outline"
         state: >-
           {% from 'templates.jinja' import day_subjects %}
-          {{ day_subjects(working_schedule.events) }}
+          {{ day_subjects(working_schedule['calendar.rory_school_schedule'].events) }}
 
 ## List tomorrow's (or next school day but one's) subjects for second child - populate sensor at 00:05 each night
   - trigger: 
@@ -115,7 +114,7 @@ template:
         hours: "0"
         minutes: "5"
     action:
-      - service: calendar.list_events
+      - service: calendar.get_events
         data:
           duration: 
             hours: 24
@@ -129,4 +128,4 @@ template:
         icon: "mdi:account-school-outline"
         state: >-
           {% from 'templates.jinja' import day_subjects %}
-          {{ day_subjects(working_schedule.events) }}
+          {{ day_subjects(working_schedule['calendar.rory_school_schedule'].events) }}

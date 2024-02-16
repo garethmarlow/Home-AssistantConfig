@@ -252,11 +252,16 @@ cards:
     show_state: false
     show_name: false
     camera_view: auto
-    entity: camera.camera1
+    entity: camera.front_door_sub
 
 ################ COLUMN 3 G&N
 
   - type: custom:stack-in-card
+    style: |
+      ha-card {
+      border: none;
+      height: 200px !important;
+      }
     view_layout:
       grid-column: 3 / 3
       grid-row: 2 / span 1
@@ -272,7 +277,7 @@ cards:
     - type: custom:atomic-calendar-revive
       style: |
         ha-card {
-        height: 445px !important;
+        height: 200px !important;
         border: none;
         # font-size: 16px;
         }

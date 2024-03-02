@@ -1,0 +1,90 @@
+## Sensors, helpers and automations to manage Octopus savings sessions
+## Sensors
+
+template:
+  - binary_sensor:
+    - name: Octopus Saving Session Pending
+      unique_id: binary_sensory.octopus_saving_session_pending
+      icon: "mdi:power-plug-battery"
+      state: >-
+        {{ state_attr('binary_sensor.octopus_energy_a_acddc775_octoplus_saving_sessions', 'next_joined_event_start') is not none }}
+
+automation:
+  - id: octsavsessionoptin
+    alias: Octopus Saving Session Opt-in
+    trigger:
+      - platform: state
+        entity_id: event.octopus_energy_a_acddc775_octoplus_saving_session_events
+    condition:
+      - condition: template
+        value_template: >-
+          {{ state_attr(saving_session_event_entity, 'available_events') | length > 0 }}
+    action:
+      - service: octopus_energy.join_octoplus_saving_session_event
+        data:
+          event_code: >-
+            {{ state_attr(saving_session_event_entity, 'available_events')[0]['code'] }}
+        target:
+          entity_id: event.octopus_energy_a_acddc775_octoplus_saving_session_events
+      - service: persistent_notification.create
+        data:
+          title: Joined Octopus Saving Sessions
+          data:
+            type: announce
+          message: >
+            {% set event_start = state_attr(saving_session_event_entity,
+            'available_events')[0]['start'] %} Joined a new Octopus Energy saving
+            session. It starts at {{ event_start.strftime('%H:%M') }} on {{
+            event_start.day }}/{{ event_start.month }}
+    variables:
+      saving_session_event_entity: event.octopus_energy_a_acddc775_octoplus_saving_session_events
+    mode: single
+
+  - id: octsavingsessionstart
+    alias: Octopus Saving Session Start
+    description: >-
+      Set inverter mode to "Force Discharge"
+    trigger:
+      - platform: state
+        entity_id:
+          - binary_sensor.octopus_energy_a_acddc775_octoplus_saving_sessions
+        from: "off"
+        to: "on"
+    condition: []
+    action:
+      - service: select.select_option
+        target:
+          entity_id: select.work_mode
+        data:
+          option: Force Discharge
+    mode: single
+
+  - id: octsavingsessionend
+    alias: Octopus Saving Session End
+    description: >-
+      Set inverter mode to "Feed-in First"
+    trigger:
+      - platform: state
+        entity_id:
+          - binary_sensor.octopus_energy_a_acddc775_octoplus_saving_sessions
+        from: "on"
+        to: "off"
+    condition: []
+    action:
+      - service: select.select_option
+        target:
+          entity_id: select.work_mode
+        data:
+          option: Feed-in First
+    mode: single
+
+homeassistant:
+  customize:
+    automation.octopus_saving_session_start:
+      icon: "mdi:battery-arrow-up"
+
+    automation.octopus_saving_session_end:  
+      icon: "mdi:battery-arrow-down"
+
+    automation.octopus_saving_session_opt_in:
+      icon: "mdi:weather-night"

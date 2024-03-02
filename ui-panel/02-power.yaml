@@ -292,17 +292,17 @@ cards:
             color: white
             children:
               - sensor.home_energy
-          - entity_id: sensor.solar_power_daily
+          - entity_id: sensor.solar_energy_today
             name: Solar Production
             color: yellow
             children:
-              - sensor.solar_power_daily
+              - sensor.solar_energy_today
       - entities:
           - entity_id: sensor.home_gas_daily
             type: passthrough
             children:
               - energy_domestic_consumption
-          - entity_id: sensor.foxess_bat_discharge
+          - entity_id: sensor.battery_discharge_today
             color: black
             name: Battery Discharge
             icon: mdi:battery
@@ -315,11 +315,11 @@ cards:
             children:
               - energy_domestic_consumption
 
-          - entity_id: sensor.solar_power_daily
+          - entity_id: sensor.solar_energy_today
             type: passthrough
             color: yellow
             children:
-              - sensor.foxess_feedin
+              - sensor.feed_in_energy_today
               - energy_domestic_consumption
       - entities:
           - entity_id: energy_domestic_consumption
@@ -333,8 +333,8 @@ cards:
               - sensor.car_charger_12_1d
               - sensor.other_energy
               - sensor.cooking_and_washing_energy
-              - sensor.foxess_bat_charge
-          - entity_id: sensor.foxess_feedin
+              - sensor.battery_charge_today
+          - entity_id: sensor.feed_in_energy_today
             name: Solar Export
             color: yellow
       - entities:
@@ -342,7 +342,7 @@ cards:
             type: passthrough
             children:
               - sensor.home_gas_daily
-          - entity_id: sensor.foxess_bat_charge
+          - entity_id: sensor.battery_charge_today
             name: Battery Charge
             color: black
           - entity_id: sensor.car_charger_12_1d
@@ -412,7 +412,7 @@ cards:
       grid-column: 1 / 1
       grid-row: 3 / 3 
     cards:
-    - entity: sensor.foxess_load_power
+    - entity: sensor.load_power
       type: gauge
       name: Load
       unit: ' '
@@ -421,7 +421,7 @@ cards:
         green: 0
         yellow: 0.25
         red: 0.75
-    - entity: sensor.solar_power_now
+    - entity: sensor.pv_power
       type: gauge
       name: Solar
       unit: ' '
@@ -430,7 +430,7 @@ cards:
         green: 0
         yellow: 0
         red: 5
-    - entity: sensor.foxess_bat_soc
+    - entity: sensor.battery_soc
       type: gauge
       name: Battery %
       unit: ' '

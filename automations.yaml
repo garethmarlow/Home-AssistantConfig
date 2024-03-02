@@ -389,7 +389,8 @@
   action:
   - service: light.turn_on
     metadata: {}
-    data: {}
+    data:
+      transition: 3
     target:
       entity_id: light.ellys_room
   mode: single
@@ -408,7 +409,8 @@
     target:
       entity_id:
       - light.ellys_room
-    data: {}
+    data:
+      transition: 5
   mode: single
 - id: '1707571893248'
   alias: Landing Motion Detected
@@ -460,7 +462,6 @@
     target:
       entity_id:
       - light.fridge_area
-      - light.hall
   mode: single
 - id: '1707769081723'
   alias: Fridge area turn off
@@ -478,5 +479,174 @@
     target:
       entity_id:
       - light.fridge_area
-      - light.hall
   mode: single
+- id: '1708104096785'
+  alias: Top Floor Landing motion
+  description: ''
+  use_blueprint:
+    path: Blackshome/sensor-light.yaml
+    input:
+      motion_trigger:
+      - binary_sensor.top_floor_landing_motion_sensor_motion
+      light_switch:
+        entity_id:
+        - light.top_floor_landing_2
+        - light.top_floor_landing
+      time_delay: 1
+      include_night_lights: night_lights_enabled
+      night_lights:
+        entity_id: light.top_floor_landing_2
+      night_time_delay: 1
+      night_light_brightness: 1
+      night_lights_conditions:
+      - time_enabled
+      night_lights_after_time: '22:30:00'
+      night_lights_before_time: 07:30:00
+      include_sun: sun_enabled
+      light_transition_off: 5
+      light_transition_on: 1
+      include_light_control:
+      - use_brightness
+      - use_transition
+      include_night_light_control:
+      - use_brightness
+      - use_transition
+      night_light_transition_off: 6
+      night_light_transition_on: 2
+- id: '1708105351754'
+  alias: Shower Room motion
+  description: ''
+  use_blueprint:
+    path: Blackshome/sensor-light.yaml
+    input:
+      motion_trigger:
+      - binary_sensor.shower_room_motion_sensor_motion
+      light_switch:
+        entity_id: light.shower_room
+      time_delay: 7
+      include_sun: sun_enabled
+      include_night_lights: night_lights_enabled
+      include_night_light_control:
+      - use_brightness
+      - use_transition
+      night_light_brightness: 1
+      night_light_transition_off: 5
+      night_lights_conditions:
+      - time_enabled
+      night_lights_after_time: '22:30:00'
+      night_lights_before_time: 07:00:00
+      include_light_control:
+      - use_brightness
+      - use_transition
+      light_transition_off: 5
+- id: '1708110582530'
+  alias: Landing motion
+  description: ''
+  use_blueprint:
+    path: Blackshome/sensor-light.yaml
+    input:
+      motion_trigger:
+      - binary_sensor.landing_motion_sensor_motion
+      light_switch:
+        entity_id: light.landing
+      time_delay: 1
+      include_sun: sun_enabled
+      include_night_lights: night_lights_enabled
+      include_night_light_control:
+      - use_brightness
+      - use_transition
+      night_light_brightness: 1
+      night_lights_after_time: '22:30:00'
+      night_lights_before_time: 07:00:00
+      night_time_delay: 1.5
+      night_lights:
+        entity_id: light.landing
+      night_lights_conditions:
+      - time_enabled
+      include_light_control:
+      - use_brightness
+      - use_transition
+      light_transition_off: 5
+      night_light_transition_off: 5
+- id: '1708110726415'
+  alias: Bathroom motion
+  description: ''
+  use_blueprint:
+    path: Blackshome/sensor-light.yaml
+    input:
+      motion_trigger:
+      - binary_sensor.bathroom_motion_sensor_motion
+      light_switch:
+        entity_id: light.bathroom
+      include_sun: sun_enabled
+      include_night_lights: night_lights_disabled
+      include_night_light_control: []
+      night_light_brightness: 1
+      night_lights_conditions:
+      - sun_enabled
+      night_lights_after_time: '22:30:00'
+      night_lights_before_time: 07:00:00
+      include_time: time_enabled
+      after_time: 07:00:00
+      before_time: '22:00:00'
+      include_light_control:
+      - use_brightness
+      - use_transition
+- id: '1708110930234'
+  alias: Hall motion
+  description: ''
+  use_blueprint:
+    path: Blackshome/sensor-light.yaml
+    input:
+      motion_trigger:
+      - binary_sensor.hall_motion_sensor_motion
+      light_switch:
+        entity_id: light.hall
+      include_night_lights: night_lights_enabled
+      night_lights:
+        entity_id: light.hall
+      include_night_light_control:
+      - use_brightness
+      night_light_brightness: 1
+      night_lights_conditions:
+      - time_enabled
+      night_lights_after_time: '22:30:00'
+      night_lights_before_time: 07:00:00
+      include_sun: sun_enabled
+      include_light_control:
+      - use_brightness
+      - use_transition
+- id: '1708113067127'
+  alias: Downstairs Toilet motion
+  description: ''
+  use_blueprint:
+    path: Blackshome/sensor-light.yaml
+    input:
+      motion_trigger:
+      - binary_sensor.downstairs_toilet_motion_sensor_motion
+      light_switch:
+        entity_id: light.downstairs_toilet
+      time_delay: 3
+      night_lights:
+        entity_id: light.downstairs_toilet
+      include_night_light_control:
+      - use_brightness
+      - use_transition
+      night_lights_after_time: '22:30:00'
+      night_lights_before_time: 07:00:00
+      include_night_lights: night_lights_disabled
+      night_light_brightness: 1
+      night_lights_conditions:
+      - time_enabled
+      include_light_control:
+      - use_brightness
+      - use_transition
+      light_transition_off: 6
+      night_light_transition_off: 5
+- id: '1709332596226'
+  alias: Octopus Energy - Join Saving Session
+  description: ''
+  use_blueprint:
+    path: BottlecapDave/octopus_energy_octoplus_join_saving_session.yml.yaml
+    input:
+      saving_session_event_entity: event.octopus_energy_a_acddc775_octoplus_saving_session_events

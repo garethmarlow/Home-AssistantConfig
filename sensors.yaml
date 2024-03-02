@@ -1,7 +1,5 @@
 
   - platform: foxess
-    username: !secret foxess_username
-    password: !secret foxess_password
     deviceID: !secret foxess_deviceid
-
-
+    deviceSN: !secret foxess_devicesn
+    apiKey: !secret foxess_apikey

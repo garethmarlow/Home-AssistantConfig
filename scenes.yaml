@@ -9,10 +9,6 @@
       device_class: outlet
       friendly_name: Socket Attic Monitors Socket 1
       state: 'on'
-    switch.socket_attic_lamp_socket:
-      device_class: outlet
-      friendly_name: Socket Attic Lamp Socket
-      state: 'on'
   icon: mdi:power-plug
   metadata: {}
 - id: '1675642412440'
@@ -638,4 +634,150 @@
       color_temp: 153
       state: 'on'
   icon: mdi:camera
+  metadata: {}
+- id: '1764592984978'
+  name: Attic Study - Full
+  entities:
+    light.dimmable_light_1_18:
+      supported_color_modes:
+      - brightness
+      color_mode: brightness
+      brightness: 3
+      mode: normal
+      dynamics: none
+      friendly_name: GU10 18
+      supported_features: 40
+      state: 'on'
+    light.dimmable_light_1_19:
+      supported_color_modes:
+      - brightness
+      friendly_name: GU10 19
+      supported_features: 40
+      state: unavailable
+    light.dimmable_light_1_20:
+      supported_color_modes:
+      - brightness
+      color_mode:
+      brightness:
+      mode: normal
+      dynamics: none
+      friendly_name: GU10 20
+      supported_features: 40
+      state: 'off'
+    light.dimmable_light_1_21:
+      supported_color_modes:
+      - brightness
+      color_mode: brightness
+      brightness: 3
+      mode: normal
+      dynamics: none
+      friendly_name: GU10 21
+      supported_features: 40
+      state: 'on'
+    switch.socket_attic_lamp_socket:
+      device_class: outlet
+      friendly_name: Socket Attic Lamp Socket
+      state: 'on'
+  metadata: {}
+- id: '1764593073166'
+  name: Attic Study - Streaming
+  entities:
+    light.dimmable_light_1_18:
+      supported_color_modes:
+      - brightness
+      color_mode: brightness
+      brightness: 3
+      mode: normal
+      dynamics: none
+      friendly_name: GU10 18
+      supported_features: 40
+      state: 'on'
+    light.dimmable_light_1_19:
+      supported_color_modes:
+      - brightness
+      color_mode:
+      brightness:
+      mode: normal
+      dynamics: none
+      friendly_name: GU10 19
+      supported_features: 40
+      state: 'off'
+    light.dimmable_light_1_20:
+      supported_color_modes:
+      - brightness
+      color_mode:
+      brightness:
+      mode: normal
+      dynamics: none
+      friendly_name: GU10 20
+      supported_features: 40
+      state: 'off'
+    light.dimmable_light_1_21:
+      supported_color_modes:
+      - brightness
+      color_mode: brightness
+      brightness: 3
+      mode: normal
+      dynamics: none
+      friendly_name: GU10 21
+      supported_features: 40
+      state: 'on'
+    switch.tv:
+      friendly_name: TV
+      state: 'on'
+    switch.socket_attic_lamp_socket:
+      device_class: outlet
+      friendly_name: Socket Attic Lamp Socket
+      state: 'on'
+  metadata: {}
+- id: '1764593392636'
+  name: Attic Study - Off
+  entities:
+    light.dimmable_light_1_18:
+      supported_color_modes:
+      - brightness
+      color_mode:
+      brightness:
+      mode: normal
+      dynamics: none
+      friendly_name: GU10 18
+      supported_features: 40
+      state: 'off'
+    light.dimmable_light_1_19:
+      supported_color_modes:
+      - brightness
+      color_mode:
+      brightness:
+      mode: normal
+      dynamics: none
+      friendly_name: GU10 19
+      supported_features: 40
+      state: 'off'
+    light.dimmable_light_1_20:
+      supported_color_modes:
+      - brightness
+      color_mode:
+      brightness:
+      mode: normal
+      dynamics: none
+      friendly_name: GU10 20
+      supported_features: 40
+      state: 'off'
+    light.dimmable_light_1_21:
+      supported_color_modes:
+      - brightness
+      color_mode:
+      brightness:
+      mode: normal
+      dynamics: none
+      friendly_name: GU10 21
+      supported_features: 40
+      state: 'off'
+    switch.tv:
+      friendly_name: TV
+      state: 'off'
+    switch.socket_attic_lamp_socket:
+      device_class: outlet
+      friendly_name: Socket Attic Lamp Socket
+      state: 'off'
   metadata: {}

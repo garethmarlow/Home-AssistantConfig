@@ -91,7 +91,8 @@ template:
           {{ (lowest_hours[0:(hours_required)] | sort(reverse=true))[0] | float }}
 
         no_forecast: >-
-          {{ True if state_attr('sensor.carbon_intensity_uk','forecast') is none else False }}
+          {{ True }} 
+## if state_attr('sensor.carbon_intensity_uk','forecast') is none else False }}
 
 ## Charge if this is one of the lowest carbon intensity slots, also keep force charge enabled
 ## if we reach max_soc otherwise the battery will drain slightly before the end of off peak 

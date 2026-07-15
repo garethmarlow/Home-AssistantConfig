@@ -1,2 +1,5 @@
 turn_off_teleprompter: "ssh -i /config/ssh_keys/id_rsa_homeassistant -o 'StrictHostKeyChecking=no' pi@192.168.1.92 sudo shutdown -h now"
-turn_off_desktop: "ssh -i /config/ssh_keys/id_rsa_homeassistant -o 'StrictHostKeyChecking=no' gareth@192.168.1.91 sudo shutdown -h now"
+turn_off_desktop: "ssh -i /config/ssh_keys/id_rsa_homeassistant -o 'StrictHostKeyChecking=no' gareth@192.168.1.90 sudo shutdown -h now"
+visualpi_next: "ssh -i /config/ssh_keys/id_rsa_homeassistant -o 'StrictHostKeyChecking=no' gareth@192.168.1.22 /usr/local/bin/projectmar-control next"
+visualpi_prev: "ssh -i /config/ssh_keys/id_rsa_homeassistant -o 'StrictHostKeyChecking=no' gareth@192.168.1.22 /usr/local/bin/projectmar-control prev"
+visualpi_dele: "ssh -i /config/ssh_keys/id_rsa_homeassistant -o 'StrictHostKeyChecking=no' gareth@192.168.1.22 /usr/local/bin/projectmar-control delete"

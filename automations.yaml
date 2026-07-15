@@ -210,40 +210,40 @@
 - id: '1698102982015'
   alias: Sync lava lamp with sofa front lamp
   description: ''
-  trigger:
-  - platform: device
-    type: changed_states
-    device_id: d05c9d2507155da9b10ad8b4141a1ed7
-    entity_id: 4ebcc930d5f2e6209ed303eef5e698ed
+  triggers:
+  - type: changed_states
+    device_id: a976c5f51ea053b1dc002d96d11ccc1a
+    entity_id: a48c3c9a68c9d9838fa11b995b7ad103
     domain: light
-  condition: []
-  action:
+    trigger: device
+  conditions: []
+  actions:
   - if:
     - condition: device
       type: is_off
-      device_id: d05c9d2507155da9b10ad8b4141a1ed7
-      entity_id: 4ebcc930d5f2e6209ed303eef5e698ed
+      device_id: a976c5f51ea053b1dc002d96d11ccc1a
+      entity_id: a48c3c9a68c9d9838fa11b995b7ad103
       domain: light
     then:
-    - service: switch.turn_off
-      data: {}
+    - data: {}
       target:
         entity_id: switch.charging_socket
-    - service: switch.turn_off
-      target:
+      action: switch.turn_off
+    - target:
         entity_id:
         - switch.lava_lamp_red_switch
       data: {}
+      action: switch.turn_off
     else:
-    - service: switch.turn_on
-      data: {}
+    - data: {}
       target:
         entity_id: switch.charging_socket
-    - service: switch.turn_on
-      metadata: {}
+      action: switch.turn_on
+    - metadata: {}
       data: {}
       target:
         entity_id: switch.lava_lamp_red_switch
+      action: switch.turn_on
   mode: single
 - id: '1698274812007'
   alias: Reload Emporia Vue
@@ -296,237 +296,266 @@
         entity_id: scene.mac_mini_camera_inactive
       metadata: {}
   mode: single
-- id: '1706798745365'
-  alias: Elly's Room Lights On
+- id: '1711753842422'
+  alias: Inverter Reset
   description: ''
   trigger:
-  - device_id: 98635ebb80db3abbb5b1a492193a2116
-    domain: zha
-    platform: device
-    type: remote_button_short_press
-    subtype: turn_on
+  - platform: time
+    at: 00:00:00
   condition: []
   action:
-  - service: light.turn_on
+  - service: foxess_modbus.update_charge_period
     metadata: {}
     data:
-      transition: 3
+      enable_force_charge: false
+      enable_charge_from_grid: false
+      start: '23:25:00'
+      end: '23:26:00'
+      inverter: bb431a8f0b4902c51fdb98acdc4a6c6a
+      charge_period: '1'
+  - service: select.select_option
     target:
-      entity_id: light.ellys_room
-  mode: single
-- id: '1706798801938'
-  alias: Elly's Room Lights turn off
-  description: ''
-  trigger:
-  - device_id: 98635ebb80db3abbb5b1a492193a2116
-    domain: zha
-    platform: device
-    type: remote_button_short_press
-    subtype: turn_off
-  condition: []
-  action:
-  - service: light.turn_off
-    target:
-      entity_id:
-      - light.ellys_room
+      entity_id: select.work_mode
     data:
-      transition: 5
+      option: Feed-in First
   mode: single
-- id: '1707769007250'
-  alias: Fridge area turn on
+- id: '1764591295874'
+  alias: Attic Study Boost
   description: ''
-  trigger:
-  - device_id: 02664aeffc6b1a302c42648fe03380a4
-    domain: zha
-    platform: device
-    type: remote_button_short_press
-    subtype: turn_on
-  condition: []
-  action:
-  - service: light.turn_on
+  triggers:
+  - trigger: webhook
+    allowed_methods:
+    - GET
+    local_only: false
+    webhook_id: attic_study_boost
+  conditions: []
+  actions:
+  - action: script.attic_study_boost
     metadata: {}
     data: {}
-    target:
-      entity_id:
-      - light.fridge_area
   mode: single
-- id: '1707769081723'
-  alias: Fridge area turn off
+- id: '1764592230470'
+  alias: Elly's Room Boost
   description: ''
-  trigger:
-  - device_id: 02664aeffc6b1a302c42648fe03380a4
-    domain: zha
-    platform: device
-    type: remote_button_short_press
-    subtype: turn_off
-  condition: []
-  action:
-  - service: light.turn_off
+  triggers:
+  - trigger: webhook
+    allowed_methods:
+    - GET
+    local_only: false
+    webhook_id: ellys_room_boost
+  conditions: []
+  actions:
+  - action: script.ellys_room_boost
+    metadata: {}
     data: {}
-    target:
-      entity_id:
-      - light.fridge_area
   mode: single
-- id: '1708104096785'
-  alias: Top Floor Landing motion
+- id: '1764592314425'
+  alias: Shower Room Boost
+  description: ''
+  triggers:
+  - trigger: webhook
+    allowed_methods:
+    - GET
+    local_only: false
+    webhook_id: shower_room_boost
+  conditions: []
+  actions:
+  - action: script.shower_boost
+    metadata: {}
+    data: {}
+  mode: single
+- id: '1764594297450'
+  alias: Attic Study Light Cycle
+  description: ''
+  triggers:
+  - webhook_id: attic_study_lights_cycle
+    trigger: webhook
+    allowed_methods:
+    - GET
+    - POST
+    - PUT
+    local_only: false
+  actions:
+  - action: script.1764594250263
+    data: {}
+  mode: single
+- id: '1769115569548'
+  alias: VisualPi control
+  description: ''
+  triggers:
+  - domain: mqtt
+    device_id: 65d320cd566f76c212b7108fe7345911
+    type: action
+    subtype: 'off'
+    trigger: device
+    id: off_pressed
+  - domain: mqtt
+    device_id: 65d320cd566f76c212b7108fe7345911
+    type: action
+    subtype: 'on'
+    trigger: device
+    id: on_pressed
+  - domain: mqtt
+    device_id: 65d320cd566f76c212b7108fe7345911
+    type: action
+    subtype: brightness_move_down
+    trigger: device
+    id: down_held
+  - domain: mqtt
+    device_id: 65d320cd566f76c212b7108fe7345911
+    type: action
+    subtype: brightness_move_up
+    trigger: device
+    id: up_held
+  conditions: []
+  actions:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: on_pressed
+      sequence:
+      - data: {}
+        action: shell_command.visualpi_next
+    - conditions:
+      - condition: trigger
+        id: off_pressed
+      sequence:
+      - data: {}
+        action: shell_command.visualpi_prev
+    - conditions:
+      - condition: trigger
+        id: down_held
+      sequence:
+      - data: {}
+        action: shell_command.visualpi_dele
+    - conditions:
+      - condition: trigger
+        id:
+        - up_held
+      sequence:
+      - action: media_player.turn_on
+        metadata: {}
+        data: {}
+        target:
+          device_id: ea9ab3b6f8bd3f13d53904866937bc10
+      - action: media_player.select_source
+        metadata: {}
+        data:
+          source: Turtable
+        target:
+          entity_id: media_player.living_room_av_amp_3
+          device_id: ea9ab3b6f8bd3f13d53904866937bc10
+      - action: media_player.turn_on
+        metadata: {}
+        data: {}
+        target:
+          entity_id: media_player.43pus8517_12_3
+      - action: media_player.select_source
+        metadata: {}
+        data:
+          source: HDMI 2
+        target:
+          device_id: a80cbf08bb07c10bee409478d02663ac
+      - action: switch.toggle
+        metadata: {}
+        data: {}
+        target:
+          entity_id: switch.43pus8517_12_ambilight_hue
+  mode: single
+- id: '1770403790006'
+  alias: Doorbell and porch
   description: ''
   use_blueprint:
     path: Blackshome/sensor-light.yaml
     input:
       motion_trigger:
-      - binary_sensor.top_floor_landing_motion_sensor_motion
+      - binary_sensor.porch_motion_occupancy
+      - binary_sensor.front_door_visitor
       light_switch:
-        entity_id:
-        - light.top_floor_landing_2
-        - light.top_floor_landing
+        entity_id: light.porch_2
       time_delay: 1
-      include_night_lights: night_lights_enabled
-      night_lights:
-        entity_id: light.top_floor_landing_2
-      night_time_delay: 1
-      night_light_brightness: 1
-      night_lights_conditions:
-      - time_enabled
-      night_lights_after_time: '22:30:00'
-      night_lights_before_time: 07:30:00
       include_sun: sun_enabled
-      light_transition_off: 5
-      light_transition_on: 1
-      include_light_control:
-      - use_brightness
-      - use_transition
-      include_night_light_control:
-      - use_brightness
-      - use_transition
-      night_light_transition_off: 6
-      night_light_transition_on: 2
-- id: '1708105351754'
-  alias: Shower Room motion
+- id: '1770736933698'
+  alias: Bakery lights
   description: ''
   use_blueprint:
     path: Blackshome/sensor-light.yaml
     input:
       motion_trigger:
-      - binary_sensor.shower_room_motion_sensor_motion
+      - binary_sensor.bakery_motion_occupancy
       light_switch:
-        entity_id: light.shower_room
-      time_delay: 7
+        entity_id: light.bakery
+      time_delay: 30
       include_sun: sun_enabled
-      include_night_lights: night_lights_enabled
-      include_night_light_control:
-      - use_brightness
-      - use_transition
-      night_light_brightness: 1
-      night_light_transition_off: 5
-      night_lights_conditions:
-      - time_enabled
-      night_lights_after_time: '22:30:00'
-      night_lights_before_time: 07:00:00
-      include_light_control:
-      - use_brightness
-      - use_transition
-      light_transition_off: 5
-- id: '1708110582530'
-  alias: Landing motion
+- id: '1770736984587'
+  alias: Gym lights
   description: ''
   use_blueprint:
     path: Blackshome/sensor-light.yaml
     input:
       motion_trigger:
-      - binary_sensor.landing_motion_sensor_motion
+      - binary_sensor.gym_motion_occupancy
+      light_switch:
+        entity_id: light.gym
+      time_delay: 2
+      include_sun: sun_enabled
+- id: '1770737070018'
+  alias: Fridge Area lights
+  description: ''
+  use_blueprint:
+    path: Blackshome/sensor-light.yaml
+    input:
+      motion_trigger:
+      - binary_sensor.fridge_area_motion_occupancy
+      light_switch:
+        entity_id: light.fridge_area
+      time_delay: 2
+      include_sun: sun_enabled
+- id: '1770737178465'
+  alias: Laundry lights
+  description: ''
+  use_blueprint:
+    path: Blackshome/sensor-light.yaml
+    input:
+      motion_trigger:
+      - binary_sensor.laundry_motion_occupancy
+      light_switch:
+        entity_id: light.laundry
+      time_delay: 2
+      include_sun: sun_enabled
+- id: '1770737275135'
+  alias: Landing lights
+  description: ''
+  use_blueprint:
+    path: Blackshome/sensor-light.yaml
+    input:
+      motion_trigger:
+      - binary_sensor.0x00124b002928b7f7_occupancy
       light_switch:
         entity_id: light.landing
-      time_delay: 1
+      time_delay: 2
       include_sun: sun_enabled
-      include_night_lights: night_lights_enabled
-      include_night_light_control:
-      - use_brightness
-      - use_transition
-      night_light_brightness: 1
-      night_lights_after_time: '22:30:00'
-      night_lights_before_time: 07:00:00
-      night_time_delay: 1.5
-      night_lights:
-        entity_id: light.landing
-      night_lights_conditions:
-      - time_enabled
-      include_light_control:
-      - use_brightness
-      - use_transition
-      light_transition_off: 5
-      night_light_transition_off: 5
-- id: '1708110726415'
-  alias: Bathroom motion
+- id: '1770737329501'
+  alias: Bathroom lights
   description: ''
   use_blueprint:
     path: Blackshome/sensor-light.yaml
     input:
       motion_trigger:
-      - binary_sensor.bathroom_motion_sensor_motion
+      - binary_sensor.bathroom_motion_occupancy
       light_switch:
         entity_id: light.bathroom
+      time_delay: 2
       include_sun: sun_enabled
-      include_night_lights: night_lights_disabled
-      include_night_light_control: []
-      night_light_brightness: 1
-      night_lights_conditions:
-      - sun_enabled
-      night_lights_after_time: '22:30:00'
-      night_lights_before_time: 07:00:00
-      include_time: time_enabled
-      after_time: 07:00:00
-      before_time: '22:00:00'
-      include_light_control:
-      - use_brightness
-      - use_transition
-- id: '1708110930234'
-  alias: Hall motion
+- id: '1770737369450'
+  alias: Shower room
   description: ''
   use_blueprint:
     path: Blackshome/sensor-light.yaml
     input:
       motion_trigger:
-      - binary_sensor.hall_motion_sensor_motion
+      - binary_sensor.0xa4c13897c1539d4b_occupancy
       light_switch:
-        entity_id: light.hall
-      include_night_lights: night_lights_enabled
-      night_lights:
-        entity_id: light.hall
-      include_night_light_control:
-      - use_brightness
-      night_light_brightness: 1
-      night_lights_conditions:
-      - time_enabled
-      night_lights_after_time: '22:30:00'
-      night_lights_before_time: 07:00:00
+        entity_id: light.shower_room
+      time_delay: 15
       include_sun: sun_enabled
-      include_light_control:
-      - use_brightness
-      - use_transition
-- id: '1708113067127'
-  alias: Downstairs Toilet motion
-  description: ''
-  use_blueprint:
-    path: Blackshome/sensor-light.yaml
-    input:
-      motion_trigger:
-      - binary_sensor.downstairs_toilet_motion_sensor_motion
-      light_switch:
-        entity_id: light.downstairs_toilet
-      time_delay: 3
-      night_lights:
-        entity_id: light.downstairs_toilet
-      include_night_light_control:
-      - use_brightness
-      - use_transition
-      night_lights_after_time: '22:30:00'
-      night_lights_before_time: 07:00:00
-      include_night_lights: night_lights_disabled
-      night_light_brightness: 1
-      night_lights_conditions:
-      - time_enabled
-      include_light_control:
-      - use_brightness
-      - use_transition
-      light_transition_off: 6
-      night_light_transition_off: 5

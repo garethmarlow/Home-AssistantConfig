@@ -1,10 +1,10 @@
 graceful_shutdown:
   alias: Graceful Shutdown
   sequence:
-  - service: shell_command.turn_off_teleprompter
-    data: {}
-  - service: shell_command.turn_off_desktop
-    data: {}
+  - data: {}
+    action: shell_command.turn_off_teleprompter
+  - data: {}
+    action: shell_command.turn_off_desktop
   - delay:
       hours: 0
       minutes: 0
@@ -22,6 +22,11 @@ graceful_shutdown:
     device_id: f3e198594acf64605ccc520ab7d74cf9
     entity_id: switch.socket_attic_lamp_socket
     domain: switch
+  - action: scene.turn_on
+    metadata: {}
+    data: {}
+    target:
+      entity_id: scene.attic_study_off
   mode: single
   icon: mdi:power-plug-off
 shower_boost:
@@ -98,7 +103,45 @@ bedtime:
     data: {}
   mode: single
   icon: mdi:bed
-
 dummy:
   description: Does nothing
   sequence: []
+'1764594250263':
+  alias: Attic Study Light Cycle
+  mode: single
+  sequence:
+  - variables:
+      current: "{% set s = states('input_select.attic_study_lights_mode') %} {% if
+        s in ['full', 'streaming', 'off'] %}\n  {{ s }}\n{% else %}\n  off\n{% endif
+        %}\n"
+      next: "{% if current == 'full' %}\n  streaming\n{% elif current == 'streaming'
+        %}\n  off\n{% else %}\n  full\n{% endif %}\n"
+  - choose:
+    - conditions: '{{ next == ''full'' }}'
+      sequence:
+      - target:
+          entity_id: scene.attic_study_full
+        action: scene.turn_on
+    - conditions: '{{ next == ''streaming'' }}'
+      sequence:
+      - target:
+          entity_id: scene.attic_study_streaming
+        action: scene.turn_on
+    - conditions: '{{ next == ''off'' }}'
+      sequence:
+      - target:
+          entity_id: scene.attic_study_off
+        action: scene.turn_on
+    default: []
+  - target:
+      entity_id: input_select.attic_study_lights_mode
+    data:
+      option: '{{ next }}'
+    action: input_select.select_option
+turntable_restart:
+  sequence:
+  - action: shell_command.turntable_restart_loopback
+    metadata: {}
+    data: {}
+  alias: Turntable - restart
+  description: ''

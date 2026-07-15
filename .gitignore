@@ -12,6 +12,7 @@
 !packages/car
 !ui-panel
 !.gitignore
+!CLAUDE.md
 config_ic3.yaml
 device_tracker.yaml
 secrets.yaml

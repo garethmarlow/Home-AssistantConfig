@@ -79,7 +79,7 @@ template:
           {{ ((as_timestamp(this.attributes.off_peak_next_end | default('unavailable') ) - as_timestamp(now())) / 3600) | round (0) }}
 
         carbon_forecast: >-
-          {{ state_attr('sensor.carbon_intensity_uk','forecast')[0:this.attributes.whole_hours_available] | map(attribute='intensity') |list }}  
+          {{ state_attr('sensor.carbon_intensity_uk','forecast')[0:this.attributes.whole_hours_available] | map(attribute='intensity') | map('float') | list }}
 
         current_intensity: >-
           {{ this.attributes.carbon_forecast[0] | float }}

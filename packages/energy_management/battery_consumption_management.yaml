@@ -159,7 +159,7 @@ template:
         {% endif %}
       state: >-
         {% set remaining_capacity = states('sensor.bms_kwh_remaining') | float(default=0) %}
-        {% set min_capacity = state_attr('binary_sensor.battery_non_viability', 'min_capacity') | float(default=0) %}
+        {% set min_capacity = state_attr('binary_sensor.battery_non_viability', 'min_capacity') | float(default=2) %}
         {% set hours_to_off_peak = state_attr('binary_sensor.battery_non_viability', 'time_to_next_off_peak') | float(default=24) %}
         {% set burn_rate = states('input_number.battery_normal_burn_rate') | float(default=0.6) %}
         {% set safety_buffer = states('input_number.battery_safety_buffer') | float(default=1) %}
@@ -177,7 +177,7 @@ template:
         remaining_capacity: >-
           {{ states('sensor.bms_kwh_remaining') | float(default=0) }}
         minimum_reserve: >-
-          {{ state_attr('binary_sensor.battery_non_viability', 'min_capacity') | float(default=0) }}
+          {{ state_attr('binary_sensor.battery_non_viability', 'min_capacity') | float(default=2) }}
         time_to_next_off_peak: >-
           {{ state_attr('binary_sensor.battery_non_viability', 'time_to_next_off_peak') | float(default=24) }}
         normal_burn_rate: >-
@@ -185,11 +185,26 @@ template:
         safety_buffer: >-
           {{ states('input_number.battery_safety_buffer') | float(default=1) }}
         reserve_required: >-
-          {{ this.attributes.minimum_reserve + (this.attributes.time_to_next_off_peak * this.attributes.normal_burn_rate) + this.attributes.safety_buffer }}
+          {% set minimum_reserve = state_attr('binary_sensor.battery_non_viability', 'min_capacity') | float(default=2) %}
+          {% set hours_to_off_peak = state_attr('binary_sensor.battery_non_viability', 'time_to_next_off_peak') | float(default=24) %}
+          {% set burn_rate = states('input_number.battery_normal_burn_rate') | float(default=0.6) %}
+          {% set safety_buffer = states('input_number.battery_safety_buffer') | float(default=1) %}
+          {{ minimum_reserve + (hours_to_off_peak * burn_rate) + safety_buffer }}
         export_headroom: >-
-          {{ this.attributes.remaining_capacity - this.attributes.reserve_required }}
+          {% set remaining_capacity = states('sensor.bms_kwh_remaining') | float(default=0) %}
+          {% set minimum_reserve = state_attr('binary_sensor.battery_non_viability', 'min_capacity') | float(default=2) %}
+          {% set hours_to_off_peak = state_attr('binary_sensor.battery_non_viability', 'time_to_next_off_peak') | float(default=24) %}
+          {% set burn_rate = states('input_number.battery_normal_burn_rate') | float(default=0.6) %}
+          {% set safety_buffer = states('input_number.battery_safety_buffer') | float(default=1) %}
+          {{ remaining_capacity - minimum_reserve - (hours_to_off_peak * burn_rate) - safety_buffer }}
         reason: >-
-          {% if this.state == 'Feed-in First' %}
+          {% set remaining_capacity = states('sensor.bms_kwh_remaining') | float(default=0) %}
+          {% set minimum_reserve = state_attr('binary_sensor.battery_non_viability', 'min_capacity') | float(default=2) %}
+          {% set hours_to_off_peak = state_attr('binary_sensor.battery_non_viability', 'time_to_next_off_peak') | float(default=24) %}
+          {% set burn_rate = states('input_number.battery_normal_burn_rate') | float(default=0.6) %}
+          {% set safety_buffer = states('input_number.battery_safety_buffer') | float(default=1) %}
+          {% set export_headroom = remaining_capacity - minimum_reserve - (hours_to_off_peak * burn_rate) - safety_buffer %}
+          {% if export_headroom >= 0 %}
             Battery can reach off-peak with its minimum reserve and safety buffer intact.
           {% else %}
             Battery needs to retain solar to reach off-peak with its minimum reserve and safety buffer intact.
@@ -223,7 +238,13 @@ automation:
         entity_id:
           - sensor.battery_solar_strategy
           - input_select.energy_automation_mode
-          - select.work_mode
+    condition:
+      - condition: template
+        value_template: >-
+          {{ trigger.platform != 'state'
+             or trigger.from_state is none
+             or trigger.to_state is none
+             or trigger.from_state.state != trigger.to_state.state }}
     variables:
       operating_mode: "{{ states('input_select.energy_automation_mode') }}"
       current_work_mode: "{{ states('select.work_mode') }}"
@@ -263,5 +284,4 @@ automation:
                   logger: energy_solar_strategy
                   message: >-
                     Would apply {{ desired_work_mode }}: {{ state_attr('sensor.battery_solar_strategy', 'reason') }}
-    mode: queued
-    max: 5
+    mode: restart

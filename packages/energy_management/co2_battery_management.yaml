@@ -79,30 +79,33 @@ template:
           {{ ((as_timestamp(this.attributes.off_peak_next_end | default('unavailable') ) - as_timestamp(now())) / 3600) | round (0) }}
 
         carbon_forecast: >-
-          {{ state_attr('sensor.carbon_intensity_uk','forecast')[0:this.attributes.whole_hours_available] | map(attribute='intensity') | map('float') | list }}
+          {% set forecast = state_attr('sensor.carbon_intensity_uk', 'forecast') | default([], true) %}
+          {% set hours_available = this.attributes.whole_hours_available | int(0) %}
+          {{ forecast[0:hours_available] | map(attribute='intensity') | map('float') | list if forecast and hours_available > 0 else [] }}
 
         current_intensity: >-
-          {{ this.attributes.carbon_forecast[0] | float }}
+          {% set forecast = this.attributes.carbon_forecast | default([], true) %}
+          {{ forecast[0] | float if forecast else none }}
 
         max_chargeable_intensity: >-
-          {% set forecast = this.attributes.carbon_forecast | default('unavailable') %}
-          {% set lowest_hours = forecast | sort %}
-          {% set hours_required = this.attributes.whole_hours_to_charge %}
-          {{ (lowest_hours[0:(hours_required)] | sort(reverse=true))[0] | float }}
+          {% set forecast = this.attributes.carbon_forecast | default([], true) %}
+          {% set hours_required = this.attributes.whole_hours_to_charge | int(0) %}
+          {{ ((forecast | sort)[0:hours_required] | max) | float if forecast and hours_required > 0 else none }}
 
         no_forecast: >-
-          {{ True }} 
-## if state_attr('sensor.carbon_intensity_uk','forecast') is none else False }}
+          {{ not (state_attr('sensor.carbon_intensity_uk', 'forecast') | default([], true)) }}
 
 ## Charge if this is one of the lowest carbon intensity slots, also keep force charge enabled
 ## if we reach max_soc otherwise the battery will drain slightly before the end of off peak 
         green_now: >-
-          {% set current_intensity = this.attributes.current_intensity %}
-          {% set max_chargeable_intensity = this.attributes.max_chargeable_intensity %}
+          {% set current_intensity = this.attributes.current_intensity | float(none) %}
+          {% set max_chargeable_intensity = this.attributes.max_chargeable_intensity | float(none) %}
           {% set current_soc = this.attributes.current_soc %}
           {% set target_soc = this.attributes.target_soc %}
-          {% if current_soc == target_soc %}
+          {% if current_soc >= target_soc %}
           True
+          {% elif current_intensity is none or max_chargeable_intensity is none %}
+          False
           {% else %}
           {{ current_intensity <= max_chargeable_intensity }}
           {% endif %}

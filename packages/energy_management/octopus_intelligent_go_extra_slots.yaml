@@ -8,34 +8,50 @@ template:
     - name: Octopus Intelligent Go peak-time slot
       unique_id: binary_sensor.octopus_intelligent_go_peak_time_slot
       state: >-
-        {{ (this.attributes.slot_details | default("unavailable")).split('|')[0]  }}
+        {% set dispatch_entity = 'binary_sensor.octopus_energy_00000000_0002_4000_8020_00000005cc63_intelligent_dispatching' %}
+        {% set current_time = now().strftime('%H:%M:%S') %}
+        {% set configured_start = states('input_datetime.off_peak_start_time') %}
+        {% set configured_end = states('input_datetime.off_peak_end_time') %}
+        {% set off_peak_start = configured_start if configured_start not in ['unknown', 'unavailable'] else '23:30:00' %}
+        {% set off_peak_end = configured_end if configured_end not in ['unknown', 'unavailable'] else '05:30:00' %}
+        {% set normal_off_peak_active = current_time >= off_peak_start or current_time < off_peak_end %}
+        {% set raw_slot_start = state_attr(dispatch_entity, 'current_start') %}
+        {% set raw_slot_end = state_attr(dispatch_entity, 'current_end') %}
+        {% set slot_start = raw_slot_start | as_datetime | as_local if raw_slot_start else none %}
+        {% set slot_end = raw_slot_end | as_datetime | as_local if raw_slot_end else none %}
+        {{ not normal_off_peak_active
+           and is_state(dispatch_entity, 'on')
+           and slot_start is not none
+           and slot_end is not none
+           and now() >= slot_start
+           and now() < slot_end }}
       attributes:
         start_time: >-
-          {{ this.attributes.slot_details.split('|')[1] }}
+          {% set dispatch_entity = 'binary_sensor.octopus_energy_00000000_0002_4000_8020_00000005cc63_intelligent_dispatching' %}
+          {% set current_time = now().strftime('%H:%M:%S') %}
+          {% set configured_start = states('input_datetime.off_peak_start_time') %}
+          {% set configured_end = states('input_datetime.off_peak_end_time') %}
+          {% set off_peak_start = configured_start if configured_start not in ['unknown', 'unavailable'] else '23:30:00' %}
+          {% set off_peak_end = configured_end if configured_end not in ['unknown', 'unavailable'] else '05:30:00' %}
+          {% set normal_off_peak_active = current_time >= off_peak_start or current_time < off_peak_end %}
+          {% set raw_slot_start = state_attr(dispatch_entity, 'current_start') %}
+          {% set slot_start = raw_slot_start | as_datetime | as_local if raw_slot_start else none %}
+          {{ slot_start.strftime('%H:%M:00')
+             if not normal_off_peak_active and is_state(dispatch_entity, 'on') and slot_start is not none
+             else '23:25:00' }}
         end_time: >-
-          {{ this.attributes.slot_details.split('|')[2] }}
-        slot_details: >-
-          {% set a=namespace() %}
-          {% set a.start=0 %}
-          {% set a.end=0 %}
-          {% set a.starttime='23:25:00' %}
-          {% set a.endtime='23:26:00' %}
-          {% set a.match=false %}
-          {% if is_state_attr('binary_sensor.battery_co2_mitigation','off_peak_active',false) %}
-            {% if state_attr('binary_sensor.octopus_energy_a_acddc775_intelligent_dispatching', 'planned_dispatches') | length > 0 %} 
-              {%- for dispatch in state_attr('binary_sensor.octopus_energy_a_acddc775_intelligent_dispatching', 'planned_dispatches') -%} 
-                {% set a.start = dispatch.start | as_local %}
-                {% set a.end = dispatch.end | as_local  %}
-                {% set temp = now() %}
-                {% if temp >= a.start and temp <= a.end %}
-                  {% set a.match = true %}
-                  {% set a.starttime = (a.start | as_local).strftime('%H:%M:00') %} 
-                  {% set a.endtime = (a.end | as_local).strftime('%H:%M:00') %} 
-                {% endif %}
-              {%- endfor %} 
-            {%- endif  %}
-          {%- endif  %}
-          {{ a.match }}|{{ a.starttime }}|{{ a.endtime }}
+          {% set dispatch_entity = 'binary_sensor.octopus_energy_00000000_0002_4000_8020_00000005cc63_intelligent_dispatching' %}
+          {% set current_time = now().strftime('%H:%M:%S') %}
+          {% set configured_start = states('input_datetime.off_peak_start_time') %}
+          {% set configured_end = states('input_datetime.off_peak_end_time') %}
+          {% set off_peak_start = configured_start if configured_start not in ['unknown', 'unavailable'] else '23:30:00' %}
+          {% set off_peak_end = configured_end if configured_end not in ['unknown', 'unavailable'] else '05:30:00' %}
+          {% set normal_off_peak_active = current_time >= off_peak_start or current_time < off_peak_end %}
+          {% set raw_slot_end = state_attr(dispatch_entity, 'current_end') %}
+          {% set slot_end = raw_slot_end | as_datetime | as_local if raw_slot_end else none %}
+          {{ slot_end.strftime('%H:%M:00')
+             if not normal_off_peak_active and is_state(dispatch_entity, 'on') and slot_end is not none
+             else '23:26:00' }}
 
 ## Automations
 automation:
@@ -46,18 +62,22 @@ automation:
     trigger:
       - platform: homeassistant
         event: start
-      # - platform: state
-      #   entity_id:
-      #     - binary_sensor.octopus_intelligent_go_peak_time_slot
-      #   to: "on"
-      # - platform: state
-      #   entity_id:
-      #     - binary_sensor.octopus_intelligent_go_peak_time_slot
-      #   to: "off"
+      - platform: state
+        entity_id:
+          - binary_sensor.octopus_intelligent_go_peak_time_slot
+        to: "on"
+      - platform: state
+        entity_id:
+          - binary_sensor.octopus_intelligent_go_peak_time_slot
+        to: "off"
       - platform: state
         entity_id:
           - binary_sensor.octopus_intelligent_go_peak_time_slot
         attribute: start_time
+      - platform: state
+        entity_id:
+          - binary_sensor.octopus_intelligent_go_peak_time_slot
+        attribute: end_time
     condition:
       - condition: state
         entity_id: binary_sensor.octopus_power_up_active
@@ -68,8 +88,20 @@ automation:
     variables:
       operating_mode: "{{ states('input_select.energy_automation_mode') }}"
       slot_active: "{{ is_state('binary_sensor.octopus_intelligent_go_peak_time_slot', 'on') }}"
-      slot_start: "{{ states.binary_sensor.octopus_intelligent_go_peak_time_slot.attributes.start_time }}"
-      slot_end: "{{ states.binary_sensor.octopus_intelligent_go_peak_time_slot.attributes.end_time }}"
+      slot_start: >-
+        {% set dispatch_entity = 'binary_sensor.octopus_energy_00000000_0002_4000_8020_00000005cc63_intelligent_dispatching' %}
+        {% set raw_start = state_attr(dispatch_entity, 'current_start') %}
+        {% set start = raw_start | as_datetime | as_local if raw_start else none %}
+        {{ start.strftime('%H:%M:00')
+           if is_state('binary_sensor.octopus_intelligent_go_peak_time_slot', 'on') and start is not none
+           else '23:25:00' }}
+      slot_end: >-
+        {% set dispatch_entity = 'binary_sensor.octopus_energy_00000000_0002_4000_8020_00000005cc63_intelligent_dispatching' %}
+        {% set raw_end = state_attr(dispatch_entity, 'current_end') %}
+        {% set end = raw_end | as_datetime | as_local if raw_end else none %}
+        {{ end.strftime('%H:%M:00')
+           if is_state('binary_sensor.octopus_intelligent_go_peak_time_slot', 'on') and end is not none
+           else '23:26:00' }}
     action:
       - choose:
           - conditions:

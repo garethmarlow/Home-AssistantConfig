@@ -1,5 +1,44 @@
 ## helpers, sensors, automations and customisations for managing domestic consumption and battery life
 ## Helpers
+input_number:
+  battery_normal_burn_rate:
+    name: Battery normal burn rate
+    icon: mdi:home-lightning-bolt-outline
+    min: 0.1
+    max: 3
+    step: 0.1
+    mode: box
+    unit_of_measurement: kW
+    initial: 0.6
+
+  battery_safety_buffer:
+    name: Battery safety buffer
+    icon: mdi:battery-heart-variant
+    min: 0
+    max: 5
+    step: 0.1
+    mode: box
+    unit_of_measurement: kWh
+    initial: 1
+
+  battery_export_hysteresis:
+    name: Battery export hysteresis
+    icon: mdi:swap-horizontal
+    min: 0.1
+    max: 2
+    step: 0.1
+    mode: box
+    unit_of_measurement: kWh
+    initial: 0.5
+
+input_select:
+  energy_automation_mode:
+    name: Energy automation mode
+    icon: mdi:transmission-tower
+    options:
+      - Observe only
+      - Automatic
+      - Manual
 
 ## Sensors
 template:
@@ -24,12 +63,14 @@ template:
 
         surplus_capacity: >-
           {% set available_capacity = this.attributes.available_capacity %}
-          {% set base_load = this.attributes.base_load %}
-          {% set time_to_next_off_peak = this.attributes.time_to_next_off_peak %}
           {% set energy_required_for_base_load = this.attributes.energy_required_for_base_load %}
-          {% set surplus_capacity = available_capacity - energy_required_for_base_load %}
+          {% set safety_buffer = this.attributes.safety_buffer %}
+          {% set surplus_capacity = available_capacity - energy_required_for_base_load - safety_buffer %}
           {% set surplus_capacity = 0 if surplus_capacity < 0 else surplus_capacity %}
           {{ surplus_capacity }}
+
+        reserve_capacity: >-
+          {{ this.attributes.min_capacity + this.attributes.energy_required_for_base_load + this.attributes.safety_buffer }}
 
         time_to_next_off_peak: >-
           {{ ((as_timestamp(states.binary_sensor.battery_co2_mitigation.attributes.off_peak_next_start | default('unavailable')) - as_timestamp(now())) / 3600) | float(default=0.1) }}
@@ -92,13 +133,15 @@ template:
           {{ states('sensor.bms_kwh_remaining') | float(default=0) }}
 
         base_load: >-
-          {{ 0.6 }}
+          {{ states('input_number.battery_normal_burn_rate') | float(default=0.6) }}
+
+        safety_buffer: >-
+          {{ states('input_number.battery_safety_buffer') | float(default=1) }}
 
         min_capacity: >-
-          {% set batteries = 7 %}
-          {% set battery_capacity = 2.85 %}
-          {% set min_soc = 0.1 %}
-          {{ batteries * battery_capacity * min_soc }}
+          {% set remaining_capacity = states('sensor.bms_kwh_remaining') | float(default=0) %}
+          {% set current_soc = states('sensor.battery_soc') | float(default=0) %}
+          {{ (remaining_capacity * 10 / current_soc) if current_soc > 0 else 2 }}
 
 
 
@@ -106,6 +149,52 @@ template:
           {{ 0 <= this.attributes.current_net_load_capacity_coverage < 1 }}
 
   - sensor:
+    - name: Battery solar strategy
+      unique_id: sensor.battery_solar_strategy
+      icon: >-
+        {% if this.state == 'Feed-in First' %}
+          mdi:transmission-tower-export
+        {% else %}
+          mdi:battery-charging
+        {% endif %}
+      state: >-
+        {% set remaining_capacity = states('sensor.bms_kwh_remaining') | float(default=0) %}
+        {% set min_capacity = state_attr('binary_sensor.battery_non_viability', 'min_capacity') | float(default=0) %}
+        {% set hours_to_off_peak = state_attr('binary_sensor.battery_non_viability', 'time_to_next_off_peak') | float(default=24) %}
+        {% set burn_rate = states('input_number.battery_normal_burn_rate') | float(default=0.6) %}
+        {% set safety_buffer = states('input_number.battery_safety_buffer') | float(default=1) %}
+        {% set hysteresis = states('input_number.battery_export_hysteresis') | float(default=0.5) %}
+        {% set export_headroom = remaining_capacity - min_capacity - (hours_to_off_peak * burn_rate) - safety_buffer %}
+        {% set current_mode = states('select.work_mode') %}
+        {% if export_headroom < 0 %}
+          Self Use
+        {% elif current_mode == 'Feed-in First' or export_headroom >= hysteresis %}
+          Feed-in First
+        {% else %}
+          Self Use
+        {% endif %}
+      attributes:
+        remaining_capacity: >-
+          {{ states('sensor.bms_kwh_remaining') | float(default=0) }}
+        minimum_reserve: >-
+          {{ state_attr('binary_sensor.battery_non_viability', 'min_capacity') | float(default=0) }}
+        time_to_next_off_peak: >-
+          {{ state_attr('binary_sensor.battery_non_viability', 'time_to_next_off_peak') | float(default=24) }}
+        normal_burn_rate: >-
+          {{ states('input_number.battery_normal_burn_rate') | float(default=0.6) }}
+        safety_buffer: >-
+          {{ states('input_number.battery_safety_buffer') | float(default=1) }}
+        reserve_required: >-
+          {{ this.attributes.minimum_reserve + (this.attributes.time_to_next_off_peak * this.attributes.normal_burn_rate) + this.attributes.safety_buffer }}
+        export_headroom: >-
+          {{ this.attributes.remaining_capacity - this.attributes.reserve_required }}
+        reason: >-
+          {% if this.state == 'Feed-in First' %}
+            Battery can reach off-peak with its minimum reserve and safety buffer intact.
+          {% else %}
+            Battery needs to retain solar to reach off-peak with its minimum reserve and safety buffer intact.
+          {% endif %}
+
     - name: House Net Load
       unique_id: sensor.house_net_load
       unit_of_measurement: kW
@@ -120,3 +209,59 @@ sensor:
     state_characteristic: mean
     max_age:
       minutes: 30
+
+automation:
+  - id: battery_solar_strategy_application
+    alias: Apply battery solar strategy
+    description: >-
+      Uses the battery reserve calculation to choose between exporting solar and
+      retaining it. Daytime Intelligent Go slots and flex events are handled separately.
+    trigger:
+      - platform: homeassistant
+        event: start
+      - platform: state
+        entity_id:
+          - sensor.battery_solar_strategy
+          - input_select.energy_automation_mode
+          - select.work_mode
+    variables:
+      operating_mode: "{{ states('input_select.energy_automation_mode') }}"
+      current_work_mode: "{{ states('select.work_mode') }}"
+      desired_work_mode: "{{ states('sensor.battery_solar_strategy') }}"
+      flex_event_active: >-
+        {{ is_state('binary_sensor.octopus_power_up_active', 'on')
+           or is_state('binary_sensor.octopus_energy_a_acddc775_octoplus_saving_sessions', 'on') }}
+      can_set_normal_mode: >-
+        {{ current_work_mode in ['Feed-in First', 'Self Use']
+           and desired_work_mode in ['Feed-in First', 'Self Use']
+           and current_work_mode != desired_work_mode
+           and not flex_event_active }}
+    action:
+      - choose:
+          - conditions:
+              - condition: template
+                value_template: "{{ operating_mode == 'Automatic' and can_set_normal_mode }}"
+            sequence:
+              - service: select.select_option
+                target:
+                  entity_id: select.work_mode
+                data:
+                  option: "{{ desired_work_mode }}"
+              - service: system_log.write
+                data:
+                  level: info
+                  logger: energy_solar_strategy
+                  message: >-
+                    Applied {{ desired_work_mode }}: {{ state_attr('sensor.battery_solar_strategy', 'reason') }}
+          - conditions:
+              - condition: template
+                value_template: "{{ operating_mode == 'Observe only' and can_set_normal_mode }}"
+            sequence:
+              - service: system_log.write
+                data:
+                  level: info
+                  logger: energy_solar_strategy
+                  message: >-
+                    Would apply {{ desired_work_mode }}: {{ state_attr('sensor.battery_solar_strategy', 'reason') }}
+    mode: queued
+    max: 5

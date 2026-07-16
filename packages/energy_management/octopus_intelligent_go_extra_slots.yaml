@@ -44,6 +44,8 @@ automation:
     description: "Charges the house battery if an Octopus Intelligent Go slot occurs in peak time"
     mode: restart
     trigger:
+      - platform: homeassistant
+        event: start
       # - platform: state
       #   entity_id:
       #     - binary_sensor.octopus_intelligent_go_peak_time_slot
@@ -60,22 +62,42 @@ automation:
       - condition: state
         entity_id: binary_sensor.octopus_power_up_active
         state: "off"
+      - condition: state
+        entity_id: binary_sensor.octopus_energy_a_acddc775_octoplus_saving_sessions
+        state: "off"
+    variables:
+      operating_mode: "{{ states('input_select.energy_automation_mode') }}"
+      slot_active: "{{ is_state('binary_sensor.octopus_intelligent_go_peak_time_slot', 'on') }}"
+      slot_start: "{{ states.binary_sensor.octopus_intelligent_go_peak_time_slot.attributes.start_time }}"
+      slot_end: "{{ states.binary_sensor.octopus_intelligent_go_peak_time_slot.attributes.end_time }}"
     action:
-      - service: foxess_modbus.update_charge_period
-        data:
-          inverter: bb431a8f0b4902c51fdb98acdc4a6c6a
-          enable_force_charge: true
-          enable_charge_from_grid: >-
-            {{ true if (is_state('binary_sensor.octopus_intelligent_go_peak_time_slot','on')) else false }}
-          start: >-
-            {{ states.binary_sensor.octopus_intelligent_go_peak_time_slot.attributes.start_time }}
-          end: >-
-            {{ states.binary_sensor.octopus_intelligent_go_peak_time_slot.attributes.end_time }}
-          charge_period: "1"
-      - service: system_log.write
-        data_template:
-          level: info
-          logger: octopus_intelligent_go
-          message: >-
-            Peak time IO charge window status: {{ states.binary_sensor.octopus_intelligent_go_peak_time_slot.state }} between {{ states.binary_sensor.octopus_intelligent_go_peak_time_slot.attributes.start_time }} and {{ states.binary_sensor.octopus_intelligent_go_peak_time_slot.attributes.end_time }}
-
+      - choose:
+          - conditions:
+              - condition: template
+                value_template: "{{ operating_mode == 'Automatic' }}"
+            sequence:
+              - service: foxess_modbus.update_charge_period
+                data:
+                  inverter: bb431a8f0b4902c51fdb98acdc4a6c6a
+                  enable_force_charge: true
+                  enable_charge_from_grid: >-
+                    {{ true if is_state('binary_sensor.octopus_intelligent_go_peak_time_slot', 'on') else false }}
+                  start: "{{ slot_start }}"
+                  end: "{{ slot_end }}"
+                  charge_period: "1"
+              - service: system_log.write
+                data:
+                  level: info
+                  logger: octopus_intelligent_go
+                  message: >-
+                    Applied daytime Intelligent Go charge window: active={{ slot_active }}, {{ slot_start }} to {{ slot_end }}.
+          - conditions:
+              - condition: template
+                value_template: "{{ operating_mode == 'Observe only' }}"
+            sequence:
+              - service: system_log.write
+                data:
+                  level: info
+                  logger: octopus_intelligent_go
+                  message: >-
+                    Would apply daytime Intelligent Go charge window: active={{ slot_active }}, {{ slot_start }} to {{ slot_end }}.

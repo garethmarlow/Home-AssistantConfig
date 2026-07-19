@@ -1,0 +1,71 @@
+schema_version: 1
+status: disabled
+
+# This is a reviewed allowlist, not an inventory. Keep entries disabled until the
+# source entity, decision use, aggregation, TTL and privacy classification have
+# all been confirmed. Never generate it from .storage or the entity registry.
+
+ha_to_lifeos:
+  occupancy_exception:
+    enabled: false
+    source_entities: []
+    aggregation: null
+    decision_use: null
+    ttl_minutes: null
+    privacy: household_sensitive
+
+  comfort_exception:
+    enabled: false
+    source_entities: []
+    aggregation: null
+    decision_use: null
+    ttl_minutes: null
+    privacy: household
+
+  energy_exception:
+    enabled: false
+    source_entities: []
+    aggregation: null
+    decision_use: null
+    ttl_minutes: null
+    privacy: household
+
+  automation_failure:
+    enabled: false
+    source_entities: []
+    aggregation: null
+    decision_use: null
+    ttl_minutes: null
+    privacy: operational
+
+lifeos_to_ha:
+  capacity:
+    enabled: false
+    target_entity: null
+    allowed_values:
+      - strong
+      - steady
+      - constrained
+      - unknown
+    decision_use: null
+    ttl_minutes: null
+    fallback: unknown
+    privacy: personal_derived
+
+  day_mode:
+    enabled: false
+    target_entity: null
+    allowed_values: []
+    decision_use: null
+    ttl_minutes: null
+    fallback: null
+    privacy: personal_derived
+
+  quiet_until:
+    enabled: false
+    target_entity: null
+    value_format: iso8601_with_offset
+    decision_use: null
+    ttl_minutes: null
+    fallback: null
+    privacy: personal_derived

@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "minor_version": 1,
+  "key": "lovelace_dashboards",
+  "data": {
+    "items": [
+      {
+        "show_in_sidebar": true,
+        "icon": "mdi:strategy",
+        "title": "HA Analytics Sandpit",
+        "require_admin": false,
+        "mode": "storage",
+        "url_path": "dashboard-heating",
+        "id": "dashboard_heating"
+      },
+      {
+        "show_in_sidebar": true,
+        "icon": "mdi:cat",
+        "title": "TabbyCam",
+        "require_admin": false,
+        "mode": "storage",
+        "url_path": "dashboard-tabbycam",
+        "id": "dashboard_tabbycam"
+      }
+    ]
+  }
+}

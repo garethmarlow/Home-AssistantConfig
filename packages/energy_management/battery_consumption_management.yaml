@@ -249,14 +249,10 @@ automation:
       operating_mode: "{{ states('input_select.energy_automation_mode') }}"
       current_work_mode: "{{ states('select.work_mode') }}"
       desired_work_mode: "{{ states('sensor.battery_solar_strategy') }}"
-      flex_event_active: >-
-        {{ is_state('binary_sensor.octopus_power_up_active', 'on')
-           or is_state('binary_sensor.octopus_energy_a_acddc775_octoplus_saving_sessions', 'on') }}
       can_set_normal_mode: >-
         {{ current_work_mode in ['Feed-in First', 'Self Use']
            and desired_work_mode in ['Feed-in First', 'Self Use']
-           and current_work_mode != desired_work_mode
-           and not flex_event_active }}
+           and current_work_mode != desired_work_mode }}
     action:
       - choose:
           - conditions:

@@ -21,3 +21,33 @@
       unique_id: next_bin_collection_double
       state: '{% if (states.sensor.next_bin_collection.state.split("|")[2] == "Organic") -%}1{% elif (states.sensor.next_bin_collection.state.split("|")[2] == "Recycle") -%}1{% else -%}0{% endif -%}'
 
+- switch:
+    - name: Blue Shell Climate
+      unique_id: blue_shell_climate
+      icon: mdi:fan
+      state: "{{ is_state('climate.blue_shell_hvac_climate_system', 'heat_cool') }}"
+      turn_on:
+        - action: climate.turn_on
+          target:
+            entity_id: climate.blue_shell_hvac_climate_system
+      turn_off:
+        - action: climate.turn_off
+          target:
+            entity_id: climate.blue_shell_hvac_climate_system
+
+    - name: Blue Shell Defrost
+      unique_id: blue_shell_defrost
+      icon: mdi:snowflake-melt
+      state: "{{ is_state_attr('climate.blue_shell_hvac_climate_system', 'preset_mode', 'Defrost') }}"
+      turn_on:
+        - action: climate.set_preset_mode
+          target:
+            entity_id: climate.blue_shell_hvac_climate_system
+          data:
+            preset_mode: Defrost
+      turn_off:
+        - action: climate.set_preset_mode
+          target:
+            entity_id: climate.blue_shell_hvac_climate_system
+          data:
+            preset_mode: Normal

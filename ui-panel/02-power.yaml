@@ -1,476 +1,432 @@
-theme: noctis_solarized
+theme: okabe_ito
 title: Power
 type: custom:grid-layout
-
-################ GRID CONFIGURATION
-layout:
-  grid-template-columns: 317px 317px 317px 317px
-  grid-template-rows: 210px 105px 105px 105px 105px 100px
-  max_cols: 4
 icon: mdi:transmission-tower-import
 badges: []
+
+# This is an operational screen, not an accounting diagram.  Read it top to
+# bottom: what is happening now, then the carbon consequence through today.
+layout:
+  grid-template-columns: repeat(4, minmax(0, 1fr))
+  grid-template-rows: 64px 280px 350px
+  grid-template-areas: |
+    "nav nav nav nav"
+    "live live live live"
+    "carbon carbon carbon carbon"
+  grid-gap: 12px
+  padding: 12px
+  mediaquery:
+    "(max-width: 800px)":
+      grid-template-columns: minmax(0, 1fr)
+      grid-template-rows: auto auto
+      grid-template-areas: |
+        "live"
+        "carbon"
+    # iPad uses HA's own navigation chrome.  The wider 16:10 Kindle retains
+    # the in-panel controls required in kiosk mode.
+    "(max-aspect-ratio: 159/100) and (min-width: 801px)":
+      grid-template-columns: repeat(4, minmax(0, 1fr))
+      grid-template-rows: 280px 350px
+      grid-template-areas: |
+        "live live live live"
+        "carbon carbon carbon carbon"
+
 cards:
-  - type: vertical-stack
-    style: |
-      ha-card {
-      height: 210px !important;
-      }
+  - type: grid
+    columns: 5
+    square: false
     view_layout:
-      grid-column: 4 / 4
-      grid-row: 1 / 1 
+      grid-area: nav
+      show:
+        mediaquery: "(min-width: 801px) and (min-aspect-ratio: 8/5)"
     cards:
-    - type: custom:stack-in-card
-      cards:
-      - type: horizontal-stack
-        cards:
-          - show_name: true
-            show_icon: true
-            type: button
-            icon: mdi:radiator
-            tap_action:
-              action: navigate
-              navigation_path: /lovelace-panel/3?wp_enabled=true
-          - type: button
-            icon: mdi:battery
-            tap_action:
-              action: navigate
-              navigation_path: /lovelace-panel/2?wp_enabled=true
-          - type: button
-            icon: mdi:transmission-tower-import
-            tap_action:
-              action: navigate
-              navigation_path: /lovelace-panel/1?wp_enabled=true
-          - type: button
-            icon: mdi:home
-            tap_action:
-              action: navigate
-              navigation_path: /lovelace-panel/?wp_enabled=true
-    - type: custom:digital-clock
-      style: |
-        ha-card {
-        height: 100px !important;
-        }  
-    - type: horizontal-stack
-      cards:  
-      - type: energy-carbon-consumed-gauge
-        name: Zero-carbon
-      - type: energy-grid-neutrality-gauge
-        name: Net grid consumption
+      - type: custom:button-card
+        template: kiosk_navigation
+        variables: { destination: /lovelace-panel }
+        name: Home
+        icon: mdi:home-variant
+        tap_action:
+          action: navigate
+          navigation_path: "/lovelace-panel/?wp_enabled=true"
+      - type: custom:button-card
+        template: kiosk_navigation
+        variables: { destination: /lovelace-panel/1 }
+        name: Power
+        icon: mdi:transmission-tower-import
+        tap_action:
+          action: navigate
+          navigation_path: "/lovelace-panel/1?wp_enabled=true"
+      - type: custom:button-card
+        template: kiosk_navigation
+        variables: { destination: /lovelace-panel/2 }
+        name: Battery
+        icon: mdi:battery
+        tap_action:
+          action: navigate
+          navigation_path: "/lovelace-panel/2?wp_enabled=true"
+      - type: custom:button-card
+        template: kiosk_navigation
+        variables: { destination: /lovelace-panel/3 }
+        name: Heating
+        icon: mdi:radiator
+        tap_action:
+          action: navigate
+          navigation_path: "/lovelace-panel/3?wp_enabled=true"
+      - type: custom:button-card
+        template: kiosk_clock
 
-  - type: energy-distribution
-    link_dashboard: true
+  - type: custom:button-card
     view_layout:
-      grid-column: 4 / 4
-      grid-row: 3 / 3 
-
-
+      grid-area: live
+    show_icon: false
+    show_name: false
+    triggers_update:
+      - sensor.pv_power
+      - sensor.load_power
+      - sensor.battery_soc
+      - sensor.live_solar_to_home_power
+      - sensor.live_solar_to_battery_power
+      - sensor.live_solar_to_grid_power
+      - sensor.live_grid_to_home_power
+      - sensor.live_grid_to_battery_power
+      - sensor.live_grid_export_power
+      - sensor.live_battery_charge_power
+      - sensor.live_battery_discharge_power
+      - sensor.grid_consumption
+      - sensor.feed_in
+      - sensor.battery_charge
+      - sensor.battery_discharge
+      - select.work_mode
+      - sensor.energy_production_today
+      - sensor.solar_energy_today
+      - sensor.co2_signal_co2_intensity
+    styles:
+      card:
+        - height: 280px
+        - padding: 14px 18px
+        - overflow: hidden
+      grid:
+        - grid-template-areas: '"solar routes home" "battery routes grid"'
+        - grid-template-columns: minmax(110px, 1fr) minmax(200px, 1.5fr) minmax(110px, 1fr)
+        - grid-template-rows: repeat(2, minmax(0, 1fr))
+        - column-gap: 14px
+        - row-gap: 8px
+      custom_fields:
+        solar:
+          - grid-area: solar
+          - justify-self: stretch
+        home:
+          - grid-area: home
+          - justify-self: stretch
+        battery:
+          - grid-area: battery
+          - justify-self: stretch
+        grid:
+          - grid-area: grid
+          - justify-self: stretch
+        routes:
+          - grid-area: routes
+          - justify-self: stretch
+          - align-self: stretch
+    custom_fields:
+      solar: |
+        [[[
+          const v = (Number(states['sensor.pv_power']?.state) || 0).toFixed(2);
+          return `<div style="height:100%;box-sizing:border-box;padding:12px;border-left:4px solid #E69F00;background:rgba(230,159,0,.10);border-radius:10px">
+            <div style="font-size:22px">☀️</div><div style="font-size:13px;opacity:.78">Solar</div><strong style="font-size:22px">${v} kW</strong>
+          </div>`;
+        ]]]
+      home: |
+        [[[
+          const v = (Number(states['sensor.load_power']?.state) || 0).toFixed(2);
+          return `<div style="height:100%;box-sizing:border-box;padding:12px;border-left:4px solid #0072B2;background:rgba(0,114,178,.10);border-radius:10px;text-align:right">
+            <div style="font-size:22px">🏠</div><div style="font-size:13px;opacity:.78">House demand</div><strong style="font-size:22px">${v} kW</strong>
+          </div>`;
+        ]]]
+      battery: |
+        [[[
+          const soc = (Number(states['sensor.battery_soc']?.state) || 0).toFixed(0);
+          const charge = Number(states['sensor.live_battery_charge_power']?.state) || 0;
+          const discharge = Number(states['sensor.live_battery_discharge_power']?.state) || 0;
+          const direction = charge > .03 ? `charging ${charge.toFixed(2)} kW` : discharge > .03 ? `supplying ${discharge.toFixed(2)} kW` : 'standing by';
+          return `<div style="height:100%;box-sizing:border-box;padding:12px;border-left:4px solid #000;background:rgba(0,0,0,.11);border-radius:10px">
+            <div style="font-size:22px">🔋</div><div style="font-size:13px;opacity:.78">Battery · ${soc}%</div><strong style="font-size:16px">${direction}</strong>
+          </div>`;
+        ]]]
+      grid: |
+        [[[
+          const imp = Number(states['sensor.live_grid_import_power']?.state) || 0;
+          const exp = Number(states['sensor.live_grid_export_power']?.state) || 0;
+          const direction = exp > .03 ? `exporting ${exp.toFixed(2)} kW` : `importing ${imp.toFixed(2)} kW`;
+          return `<div style="height:100%;box-sizing:border-box;padding:12px;border-left:4px solid #56B4E9;background:rgba(86,180,233,.10);border-radius:10px;text-align:right">
+            <div style="font-size:22px">⚡</div><div style="font-size:13px;opacity:.78">Grid</div><strong style="font-size:16px">${direction}</strong>
+          </div>`;
+        ]]]
+      routes: |
+        [[[
+          const n = (id) => Number(states[id]?.state) || 0;
+          const chip = (content, colour, title = '') =>
+            `<span title="${title}" style="display:inline-flex;align-items:center;gap:5px;padding:7px 10px;border-radius:99px;background:${colour}20;border:1px solid ${colour}55;font-size:15px;white-space:nowrap">${content}</span>`;
+          const routes = [
+            ['☀️', '🏠', n('sensor.live_solar_to_home_power'), '#E69F00'],
+            ['☀️', '🔋', n('sensor.live_solar_to_battery_power'), '#E69F00'],
+            ['☀️', '↗️', n('sensor.live_solar_to_grid_power'), '#E69F00'],
+            ['🔋', '🏠', n('sensor.live_battery_discharge_power'), '#0072B2'],
+            ['⚡', '🏠', n('sensor.live_grid_to_home_power'), '#56B4E9'],
+            ['⚡', '🔋', n('sensor.live_grid_to_battery_power'), '#56B4E9'],
+          ].filter(([, , value]) => value > .03);
+          const generated = n('sensor.solar_energy_today').toFixed(1);
+          const forecast = n('sensor.energy_production_today').toFixed(1);
+          const carbon = n('sensor.co2_signal_co2_intensity').toFixed(0);
+          const mode = states['select.work_mode']?.state || '';
+          const priority = mode === 'Feed-in First' ? '☀️ → 🏠 → ↗️' : mode === 'Self Use' ? '☀️ → 🏠 → 🔋 → ↗️' : '☀️ → ⚙️';
+          const metrics = [
+            chip(`☀️ <b>${generated}</b> / ${forecast} kWh`, '#E69F00', 'solar generated today / solar forecast today'),
+            chip(`🌍 <b>${carbon}</b> gCO₂e/kWh`, '#0072B2', 'current grid carbon intensity'),
+          ].join('');
+          const flow = routes.length
+            ? routes.map(([from, to, value, colour]) => chip(`${from} <b>→</b> ${to} <strong>${value.toFixed(2)} kW</strong>`, colour)).join('')
+            : '<span style="opacity:.72">Waiting for a measurable flow</span>';
+          return `<div style="height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:8px">
+            <div style="display:flex;justify-content:center;gap:8px;flex-wrap:wrap">${metrics}</div>
+            <div style="display:flex;justify-content:center;gap:8px;flex-wrap:wrap">${flow}</div>
+            <div style="display:flex;justify-content:center">${chip(priority, '#999999', 'inverter solar priority')}</div>
+          </div>`;
+        ]]]
 
   - type: custom:apexcharts-card
+    view_layout:
+      grid-area: carbon
     update_interval: 10m
     layout: minimal
     graph_span: 24h
     span:
       start: day
-      offset: +30min
+      offset: +5min
     now:
       show: true
-      color: red
+      color: '#D55E00'
       label: Now
-    apex_config:
-      legend:
-        show: false
     header:
       show: true
-      title: Energy Flow and Carbon Footprint
-      show_states: false
+      title: Energy flow and carbon
+      show_states: true
       colorize_states: true
-    all_series_config:
-      stroke_width: 1
-    series:
-
-# Chart
-
-      - entity: sensor.home_gas_consumption_cleaned
-        yaxis_id: energy
-        name: Gas Consumption
-        type: area
-        stroke_width: 1
-        color: red
-        group_by:
-          func: diff
-          duration: 30m
-        extend_to: now
-        show:
-          in_header: false
-
-      - entity: sensor.home_internal_consumption_accumulator
-        yaxis_id: energy
-        name: Domestic Consumption
-        type: area
-        stroke_width: 1
-        color: blue
-        group_by:
-          func: diff
-          duration: 30m
-        extend_to: now
-        show:
-          in_header: false
-
-      - entity: sensor.solar_power_daily
-        type: area
-        yaxis_id: energy
-        color: yellow
-        stroke_width: 1
-        group_by:
-          func: diff
-          duration: 30m
-        extend_to: now
-        show:
-          in_header: false
-
-
-      - entity: sensor.home_co2_shadow_total
-        type: area
-        yaxis_id: energy
-        color: lightgrey
-        group_by:
-          func: diff
-          duration: 30m
-        extend_to: now
-        transform: return -3 * x;
-        show:
-          in_header: false
-
-
-      - entity: sensor.home_co2_total
-        type: area
-        yaxis_id: energy
-        color: brown
-        group_by:
-          func: diff
-          duration: 30m
-        extend_to: now
-        transform: return -3 * x;
-        show:
-          in_header: false
-
-      - entity: sensor.home_co2
-        type: area
-        yaxis_id: energy
-        color: darkgrey
-        transform: return -3 * x;
-        group_by:
-          func: diff
-          duration: 30m
-        extend_to: now
-        show:
-          in_header: false
-
-
-# Header
-
-      - entity: sensor.home_gas_consumption_cleaned
-        yaxis_id: uncharted
-        name: Gas
-        color: red
-        group_by:
-          func: diff
-          duration: 1d
-        show:
-          in_chart: false
-
-      - entity: sensor.home_internal_consumption_accumulator
-        yaxis_id: uncharted
-        name: Electricity
-        color: blue
-        group_by:
-          func: diff
-          duration: 1d
-        show:
-          in_chart: false
-
-      - entity: sensor.solar_power_daily
-        yaxis_id: uncharted
-        name: Solar
-        color: yellow
-        group_by:
-          func: diff
-          duration: 1d
-        show:
-          in_chart: false
-
-      - entity: sensor.home_co2
-        yaxis_id: uncharted
-        name: Grid
-        color: brown
-        group_by:
-          func: diff
-          duration: 1d
-        show:
-          in_chart: false    
-
-
-
-      - entity: sensor.home_gas_co2
-        yaxis_id: uncharted
-        name: Gas
-        color: darkgrey
-        group_by:
-          func: diff
-          duration: 1d
-        show:
-          in_chart: false    
-
-      - entity: sensor.home_co2_total
-        yaxis_id: uncharted
-        name: Total
-        color: black
-        group_by:
-          func: diff
-          duration: 1d
-        show:
-          in_chart: false    
-
-      - entity: sensor.home_co2_shadow_total
-        yaxis_id: uncharted
-        name: Shadow
-        color: black
-        group_by:
-          func: diff
-          duration: 1d
-        show:
-          in_chart: false    
-
-    yaxis:
-      - id: energy
+    apex_config:
+      chart:
+        stacked: false
+        toolbar:
+          show: false
+      legend:
         show: false
-
-
-      - id: uncharted
-        show: false          
-
-
-
-
-
-
+      fill:
+        type: solid
+        opacity: 0.45
+    all_series_config:
+      stroke_width: 2
+      extend_to: now
+    series:
+      # Back-to-front pseudo-stack for grid-supplied demand. These are lines,
+      # not columns: the cumulative traces make the components readable while
+      # retaining the original flowing visual language.
+      - entity: sensor.energy_chart_grid_pull_plus_ev_and_battery
+        yaxis_id: flow
+        name: ⚡ + 🚗 + 🔋
+        type: area
+        color: '#303030'
+        opacity: 1
+        stroke_width: 4
+        unit: kW
+        transform: return Math.max(0, 2 * x);
+        group_by:
+          func: diff
+          duration: 30m
+        show:
+          in_header: false
+      - entity: sensor.energy_chart_grid_pull_plus_ev
+        yaxis_id: flow
+        name: ⚡ + 🚗
+        type: area
+        color: '#0072B2'
+        opacity: 0.8
+        stroke_width: 3
+        unit: kW
+        transform: return Math.max(0, 2 * x);
+        group_by:
+          func: diff
+          duration: 30m
+        show:
+          in_header: false
+      - entity: sensor.energy_chart_grid_pull
+        yaxis_id: flow
+        name: ⚡ Grid pull
+        type: area
+        color: '#56B4E9'
+        opacity: 0.65
+        unit: kW
+        transform: return Math.max(0, 2 * x);
+        group_by:
+          func: diff
+          duration: 30m
+        show:
+          in_header: false
+      # Above-axis series are average power in kW. Octopus exposes gas as
+      # timestamped half-hourly `charges`; render those directly rather than
+      # inferring timing from changes to its daily cumulative total.
+      - entity: sensor.octopus_energy_gas_g4p71420101600_3083012410_current_accumulative_consumption_kwh
+        yaxis_id: flow
+        name: 🔥 Gas
+        type: area
+        color: '#D55E00'
+        stroke_width: 3
+        unit: kW
+        data_generator: |
+          const charges = entity.attributes.charges || [];
+          const data = [];
+          charges.forEach((charge) => {
+            const start = new Date(charge.start).getTime();
+            const end = new Date(charge.end).getTime();
+            const hours = (end - start) / 3600000;
+            const consumption = Math.max(0, Number(charge.consumption) || 0);
+            if (Number.isFinite(start) && Number.isFinite(end) && end > start) {
+              data.push([start + (end - start) / 2, consumption / hours]);
+            }
+          });
+          return data.sort((a, b) => a[0] - b[0]);
+        show:
+          in_header: false
+      - entity: sensor.energy_chart_metered_consumption_excluding_ev
+        yaxis_id: flow
+        name: 🏠 Metered electricity
+        type: area
+        color: '#009E73'
+        unit: kW
+        transform: return Math.max(0, 2 * x);
+        group_by:
+          func: diff
+          duration: 30m
+        show:
+          in_header: false
+      - entity: sensor.solar_energy_today
+        yaxis_id: flow
+        name: ☀️ Solar generation
+        type: area
+        color: '#E69F00'
+        unit: kW
+        transform: return Math.max(0, 2 * x);
+        group_by:
+          func: diff
+          duration: 30m
+        show:
+          in_header: false
+      # Plot the same daily totals used in the headline.  This keeps a gas
+      # meter update in the same bucket as its 0.185 kgCO2e/kWh combustion
+      # contribution, rather than relying on the arrival time of a separate
+      # lifetime ledger.
+      # Actual CO₂ is physical: grid-import carbon plus gas combustion. The
+      # export credit belongs only in the no-infrastructure counterfactual.
+      - entity: sensor.home_actual_co2_today
+        yaxis_id: flow
+        name: Actual CO₂
+        type: area
+        color: '#D55E00'
+        unit: kgCO₂e/hr
+        # The counters are updated with the half-hourly energy readings.
+        # Use the same bucket size, then convert kg/30m to kg/hr, so the
+        # footprint appears as soon as the measurement arrives rather than
+        # waiting for the end of the clock hour.
+        transform: return -2 * Math.max(0, x);
+        group_by:
+          func: diff
+          duration: 30m
+        extend_to: false
+        show:
+          in_header: false
+      - entity: sensor.home_unmitigated_co2_today
+        yaxis_id: flow
+        name: Unmitigated CO₂
+        type: area
+        color: '#CC79A7'
+        unit: kgCO₂e/hr
+        # Daily totals reset at midnight; ignore that negative reset rather
+        # than drawing a false carbon spike.
+        transform: return -2 * Math.max(0, x);
+        group_by:
+          func: diff
+          duration: 30m
+        extend_to: false
+        show:
+          in_header: false
+      # This exact gas component is deliberately shown as an overlay, not a
+      # stack. It is included in both carbon totals above and is sourced from
+      # the same timestamped Octopus interval as the gas profile.
+      - entity: sensor.octopus_energy_gas_g4p71420101600_3083012410_current_accumulative_consumption_kwh
+        yaxis_id: flow
+        name: Gas combustion CO₂ (included in both)
+        type: area
+        color: '#A64B00'
+        opacity: 0.4
+        stroke_width: 2
+        unit: kgCO₂e/hr
+        data_generator: |
+          const charges = entity.attributes.charges || [];
+          const data = [];
+          charges.forEach((charge) => {
+            const start = new Date(charge.start).getTime();
+            const end = new Date(charge.end).getTime();
+            const hours = (end - start) / 3600000;
+            const consumption = Math.max(0, Number(charge.consumption) || 0);
+            if (Number.isFinite(start) && Number.isFinite(end) && end > start) {
+              data.push([start + (end - start) / 2, -consumption * 0.185 / hours]);
+            }
+          });
+          return data.sort((a, b) => a[0] - b[0]);
+        show:
+          in_header: false
+      # The compact header is deliberately ordered by household relevance:
+      # domestic load, EV, fuel/generation, then actual and counterfactual CO₂.
+      - entity: sensor.energy_chart_metered_consumption_excluding_ev
+        yaxis_id: summary
+        name: 🏠 Domestic today
+        color: '#009E73'
+        show:
+          in_chart: false
+      - entity: sensor.car_charger_12_1d
+        yaxis_id: summary
+        name: 🚗 Car today
+        color: '#0072B2'
+        show:
+          in_chart: false
+      - entity: sensor.home_gas_daily
+        yaxis_id: summary
+        name: 🔥 Gas today
+        color: '#D55E00'
+        show:
+          in_chart: false
+      - entity: sensor.solar_energy_today
+        yaxis_id: summary
+        name: ☀️ Solar today
+        color: '#E69F00'
+        show:
+          in_chart: false
+      # Header values must use untransformed daily totals. The plotted carbon
+      # values are negative only to make a visual footprint below the axis.
+      - entity: sensor.home_actual_co2_today
+        yaxis_id: summary
+        name: Actual CO₂ today
+        color: '#D55E00'
+        show:
+          in_chart: false
+      - entity: sensor.home_unmitigated_co2_today
+        yaxis_id: summary
+        name: Unmitigated CO₂ today
+        color: '#CC79A7'
+        show:
+          in_chart: false
+    yaxis:
+      - id: flow
+        show: false
+      - id: summary
+        show: false
     style: |
-      ha-card {
-      height: 412px !important;
-      }    
-    view_layout:
-      grid-column: 2 / span 2
-      grid-row: 1 / span 3 
-
-  - type: custom:sankey-chart
-    style: |
-      ha-card {
-      height: 300px !important;
-      }    
-    view_layout:
-      grid-column: 1 / span 3
-      grid-row: 4 / span 3
-    show_names: true
-    wide: true
-    show_icons: false
-    unit_prefix: k
-    round: 1
-    sections:
-      - entities:
-          - entity_id: sensor.home_gas_daily
-            name: Gas
-            color: red
-            children:
-              - sensor.home_gas_daily
-          - entity_id: sensor.home_energy_dirty_daily
-            name: Fossil
-            color: brown
-            children:
-              - sensor.home_energy
-          - entity_id: sensor.home_energy_clean_daily
-            name: Green
-            color: white
-            children:
-              - sensor.home_energy
-          - entity_id: sensor.solar_energy_today
-            name: Solar Production
-            color: yellow
-            children:
-              - sensor.solar_energy_today
-      - entities:
-          - entity_id: sensor.home_gas_daily
-            type: passthrough
-            children:
-              - energy_domestic_consumption
-          - entity_id: sensor.battery_discharge_today
-            color: black
-            name: Battery Discharge
-            icon: mdi:battery
-            children:
-              - energy_domestic_consumption
-          - entity_id: sensor.home_energy
-            name: Grid Consumption
-            color: blue
-            icon: mdi:transmission-tower-import
-            children:
-              - energy_domestic_consumption
-
-          - entity_id: sensor.solar_energy_today
-            type: passthrough
-            color: yellow
-            children:
-              - sensor.feed_in_energy_today
-              - energy_domestic_consumption
-      - entities:
-          - entity_id: energy_domestic_consumption
-            name: Home
-            type: remaining_parent_state
-            children:
-              - sensor.home_gas_daily
-              - sensor.lighting_energy
-              - sensor.computer_energy
-              - sensor.entertainment_energy
-              - sensor.car_charger_12_1d
-              - sensor.other_energy
-              - sensor.cooking_and_washing_energy
-              - sensor.battery_charge_today
-          - entity_id: sensor.feed_in_energy_today
-            name: Solar Export
-            color: yellow
-      - entities:
-          - entity_id: sensor.home_gas_daily
-            type: passthrough
-            children:
-              - sensor.home_gas_daily
-          - entity_id: sensor.battery_charge_today
-            name: Battery Charge
-            color: black
-          - entity_id: sensor.car_charger_12_1d
-            name: EV
-            icon: mdi:ev-plug-type2
-            type: passthrough
-            children:
-              - sensor.car_charger_12_1d
-          - entity_id: sensor.cooking_and_washing_energy
-            name: Cooking/Washing
-            icon: mdi:washing-machine
-            children:
-              - sensor.kitchen_sockets_1_1d
-              - sensor.cooker_3_1d
-
-          - entity_id: sensor.computer_energy
-            name: Computers
-            icon: mdi:laptop
-            children:
-              - sensor.bedrooms_7_1d
-              - sensor.attic_sockets_9_1d
-
-          - entity_id: sensor.entertainment_energy
-            name: Entertainment
-            icon: mdi:console
-            children:
-              - sensor.living_room_2_1d
-              - sensor.study_sockets_8_1d
-
-          - entity_id: sensor.lighting_energy
-            name: Lights
-            icon: mdi:lamps
-            children:
-              - sensor.downstairs_lights_5_1d
-              - sensor.kitchen_lights_11_1d
-              - sensor.upstairs_lights_10_1d
-
-          - entity_id: sensor.other_energy
-            name: Other
-            icon: mdi:slot-machine
-            children:
-              - sensor.immersion_heater_4_1d
-              - sensor.hall_6_1d
-
-      - entities:
-          - sensor.home_gas_daily
-          - sensor.car_charger_12_1d
-          - sensor.kitchen_sockets_1_1d
-          - sensor.cooker_3_1d
-
-          - sensor.attic_sockets_9_1d
-          - sensor.bedrooms_7_1d
-
-          - sensor.living_room_2_1d
-          - sensor.study_sockets_8_1d
-
-          - sensor.kitchen_lights_11_1d
-          - sensor.downstairs_lights_5_1d
-
-          - sensor.upstairs_lights_10_1d
-          - sensor.hall_6_1d
-          - sensor.immersion_heater_4_1d
-
-  - type: grid
-    columns: 3
-    view_layout:
-      grid-column: 1 / 1
-      grid-row: 3 / 3 
-    cards:
-    - entity: sensor.load_power
-      type: gauge
-      name: Load
-      unit: ' '
-      max: 2
-      severity:
-        green: 0
-        yellow: 0.25
-        red: 0.75
-    - entity: sensor.pv_power
-      type: gauge
-      name: Solar
-      unit: ' '
-      max: 2
-      severity:
-        green: 0
-        yellow: 0
-        red: 5
-    - entity: sensor.battery_soc
-      type: gauge
-      name: Battery %
-      unit: ' '
-      severity:
-        green: 0.6
-        yellow: 0.4
-        red: 0.25
-      max: 100   
-
-
-  - type: entities
-    view_layout:
-      grid-column: 1 / 1
-      grid-row: 1 / 3
-    entities:
-    - type: 'custom:template-entity-row'
-      name: Solar Forecast Today
-      icon: mdi:sun-clock-outline
-      state: "{{(states('sensor.energy_production_today') | float(0) | round(1))}} kWh"
-
-    - type: 'custom:template-entity-row'
-      name: Solar Forecast Tomorrow
-      icon: mdi:sun-clock-outline
-      state: "{{(states('sensor.energy_production_tomorrow') | float(0) | round(1))}} kWh"
-
-
-    - state: "{{(states('sensor.solar_power_daily') | float(0) | round(1))}} kWh"
-      type: 'custom:template-entity-row'
-      name: Solar Production Today
-      icon: "mdi:solar-power-variant-outline"
-    - type: 'custom:template-entity-row'
-      name: Feedin Today
-      icon: mdi:transmission-tower-export
-      state: "{{(states('sensor.foxess_feedin') | float(0) | round(1))}} kWh"
-    - entity: sensor.power_highest_peak_time_today
-      name: Peak Solar
-      icon: "mdi:sun-clock-outline"
-    - entity: sensor.co2_signal_co2_intensity
-      name: CO2 intensity
-      icon: "mdi:sun-clock-outline"
-
-      
-
+      ha-card { height: 350px !important; }

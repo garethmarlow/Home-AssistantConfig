@@ -26,6 +26,64 @@ template:
       unit_of_measurement: "kWh"
       state_class: total_increasing
 
+    # Preserve the CO₂ Signal-derived carbon mix while reconciling it to the
+    # Octopus daily import used by the Energy Dashboard and Sankey diagram.
+    - name: Sankey Grid Fossil Today
+      unique_id: sankey_grid_fossil_today
+      device_class: energy
+      unit_of_measurement: "kWh"
+      state_class: total
+      availability: "{{ has_value('sensor.home_energy_daily') }}"
+      state: >-
+        {% set grid_import = states('sensor.home_energy_daily') | float(0) %}
+        {% set fossil = states('sensor.home_energy_dirty_daily') | float(0) %}
+        {% set clean = states('sensor.home_energy_clean_daily') | float(0) %}
+        {% set tracked = fossil + clean %}
+        {% set fallback_fraction = states('sensor.co2_signal_grid_fossil_fuel_percentage') | float(0) / 100 %}
+        {% set fossil_fraction = fossil / tracked if tracked > 0 else fallback_fraction %}
+        {{ (grid_import * fossil_fraction) | round(3) }}
+
+    - name: Sankey Grid Low Carbon Today
+      unique_id: sankey_grid_low_carbon_today
+      device_class: energy
+      unit_of_measurement: "kWh"
+      state_class: total
+      availability: "{{ has_value('sensor.home_energy_daily') }}"
+      state: >-
+        {% set grid_import = states('sensor.home_energy_daily') | float(0) %}
+        {% set fossil = states('sensor.home_energy_dirty_daily') | float(0) %}
+        {% set clean = states('sensor.home_energy_clean_daily') | float(0) %}
+        {% set tracked = fossil + clean %}
+        {% set fallback_fraction = states('sensor.co2_signal_grid_fossil_fuel_percentage') | float(0) / 100 %}
+        {% set fossil_fraction = fossil / tracked if tracked > 0 else fallback_fraction %}
+        {{ (grid_import * (1 - fossil_fraction)) | round(3) }}
+
+    - name: Sankey Property Electricity Today
+      unique_id: sankey_property_electricity_today
+      device_class: energy
+      unit_of_measurement: "kWh"
+      state_class: total
+      availability: >-
+        {{ has_value('sensor.home_energy_daily')
+           and has_value('sensor.solar_energy_today')
+           and has_value('sensor.battery_discharge_today') }}
+      state: >-
+        {{ (states('sensor.home_energy_daily') | float(0)
+            + states('sensor.solar_energy_today') | float(0)
+            + states('sensor.battery_discharge_today') | float(0)) | round(3) }}
+
+    - name: Sankey Home Energy Today
+      unique_id: sankey_home_energy_today
+      device_class: energy
+      unit_of_measurement: "kWh"
+      state_class: total
+      availability: >-
+        {{ has_value('sensor.sankey_property_electricity_today')
+           and has_value('sensor.feed_in_energy_today') }}
+      state: >-
+        {{ [states('sensor.sankey_property_electricity_today') | float(0)
+             - states('sensor.feed_in_energy_today') | float(0), 0] | max | round(3) }}
+
     - name: Home Peak Energy
       unique_id: home_peak_energy
       state: "{{ states('input_number.home_peak_energy') | float | default(0) }}"
@@ -44,6 +102,37 @@ template:
       unit_of_measurement: "kWh"
       state_class: total_increasing
 
+    # Daily chart helpers. Home Energy is total grid import and already
+    # includes EV and battery charging. Split it into mutually exclusive
+    # domestic, EV and battery components before the chart rebuilds the
+    # cumulative visual layers: domestic; domestic + EV; total import.
+    - name: Energy Chart Metered Consumption Excluding EV
+      unique_id: energy_chart_metered_consumption_excluding_ev
+      state: >-
+        {{ [states('sensor.home_internal_consumption') | float(0)
+            - states('sensor.car_charger_12_1d') | float(0), 0] | max }}
+      unit_of_measurement: "kWh"
+
+    - name: Energy Chart Grid Pull
+      unique_id: energy_chart_grid_pull
+      state: >-
+        {{ [states('sensor.home_energy_daily') | float(0)
+            - states('sensor.car_charger_12_1d') | float(0)
+            - states('sensor.battery_charge_today') | float(0), 0] | max }}
+      unit_of_measurement: "kWh"
+
+    - name: Energy Chart Grid Pull Plus EV
+      unique_id: energy_chart_grid_pull_plus_ev
+      state: >-
+        {{ [states('sensor.home_energy_daily') | float(0)
+            - states('sensor.battery_charge_today') | float(0), 0] | max }}
+      unit_of_measurement: "kWh"
+
+    - name: Energy Chart Grid Pull Plus EV and Battery
+      unique_id: energy_chart_grid_pull_plus_ev_and_battery
+      state: "{{ states('sensor.home_energy_daily') | float(0) }}"
+      unit_of_measurement: "kWh"
+
     
 
     - name: Home CO2
@@ -52,27 +141,136 @@ template:
       unit_of_measurement: "kgCO2eq"
       state_class: total_increasing
 
-    - name: Home Gas CO2
-      unique_id: home_gas_carbon_footprint
-      # availability_template: >-
-      #   {% if is_state('sensor.home_gas_consumption_cleaned') %}
-      #   {{ 0.185 * (states('sensor.home_gas_consumption_cleaned') | float) }}
-      #   {% endif %}
-      state: "{{ 0.185 * (states('sensor.home_gas_consumption_cleaned') | float | default(0)) }}"
+    - name: Home Solar Export CO2 Credit
+      unique_id: home_solar_export_co2_credit
+      # A distinct increasing ledger for the avoided grid carbon represented
+      # by exported electricity.  Keep this separate from imported carbon so
+      # the underlying totals never become ambiguous or non-monotonic.
+      state: "{{ states('input_number.solar_export_carbon_credit_home') | float(0) }}"
       unit_of_measurement: "kgCO2eq"
       state_class: total_increasing
 
-    - name: Home CO2 total
-      unique_id: home_total_carbon_footprint
-      state: "{{ states('sensor.home_co2') | float | default(0) + states('sensor.home_gas_co2') | float | default(0) }}"
+    # Octopus supplies timestamped 30-minute gas intervals in its `charges`
+    # attribute.  Treat those as the canonical source: unlike a cumulative
+    # meter delta, they can be shown in the interval in which gas was burnt.
+    - name: Home Gas CO2 Today
+      unique_id: home_gas_co2_today
       unit_of_measurement: "kgCO2eq"
-      state_class: total_increasing
+      state_class: measurement
+      state: >-
+        {% set charges = state_attr('sensor.octopus_energy_gas_g4p71420101600_3083012410_current_accumulative_consumption_kwh', 'charges') | default([], true) %}
+        {% set ns = namespace(kwh=0) %}
+        {% for charge in charges %}
+          {% set ns.kwh = ns.kwh + (charge.get('consumption') | float(0)) %}
+        {% endfor %}
+        {{ (ns.kwh * 0.185) | round(6) }}
 
-    - name: Home CO2 shadow total
-      unique_id: home_total_shadow_carbon_footprint
-      state: "{{ states('sensor.home_internal_shadow_carbon') | float | default(0) + states('sensor.home_gas_co2') | float | default(0) }}"
+    # Daily carbon starts from zero at midnight.  Gas combustion is a shared,
+    # physical contribution to both actual and unmitigated footprints.
+    - name: Home Actual CO2 Today
+      unique_id: home_actual_co2_today
       unit_of_measurement: "kgCO2eq"
-      state_class: total_increasing      
+      state_class: measurement
+      state: >-
+        {{ (states('sensor.home_electric_co2_daily') | float(0)
+            + states('sensor.home_gas_co2_today') | float(0)) | round(3) }}
+
+    - name: Home Solar Export CO2 Credit Today
+      unique_id: home_solar_export_co2_credit_today
+      unit_of_measurement: "kgCO2eq"
+      state_class: measurement
+      state: "{{ states('sensor.home_solar_export_carbon_credit_daily') | float(0) | round(3) }}"
+
+    - name: Home Unmitigated CO2 Today
+      unique_id: home_unmitigated_co2_today
+      unit_of_measurement: "kgCO2eq"
+      state_class: measurement
+      state: >-
+        {{ (states('sensor.home_unmitigated_electric_co2_daily') | float(0)
+            + states('sensor.home_solar_export_carbon_credit_daily') | float(0)
+            + states('sensor.home_gas_co2_today') | float(0)) | round(3) }}
+
+    # Real-time flows: use the directional entities provided by foxess_modbus,
+    # rather than attempting to infer grid or battery direction from signed
+    # inverter registers. RPower is inverter output (not grid flow), and
+    # InvBatPower's sign is model/register dependent. The directional entities
+    # below are positive-only and match the physical arrows shown in the app.
+    - name: Live Grid Import Power
+      unique_id: live_grid_import_power
+      device_class: power
+      unit_of_measurement: "kW"
+      state_class: measurement
+      state: "{{ [states('sensor.grid_consumption') | float(0), 0] | max | round(3) }}"
+
+    - name: Live Grid Export Power
+      unique_id: live_grid_export_power
+      device_class: power
+      unit_of_measurement: "kW"
+      state_class: measurement
+      state: "{{ [states('sensor.feed_in') | float(0), 0] | max | round(3) }}"
+
+    - name: Live Battery Charge Power
+      unique_id: live_battery_charge_power
+      device_class: power
+      unit_of_measurement: "kW"
+      state_class: measurement
+      state: "{{ [states('sensor.battery_charge') | float(0), 0] | max | round(3) }}"
+
+    - name: Live Battery Discharge Power
+      unique_id: live_battery_discharge_power
+      device_class: power
+      unit_of_measurement: "kW"
+      state_class: measurement
+      state: "{{ [states('sensor.battery_discharge') | float(0), 0] | max | round(3) }}"
+
+    - name: Live Solar To Home Power
+      unique_id: live_solar_to_home_power
+      device_class: power
+      unit_of_measurement: "kW"
+      state_class: measurement
+      state: >-
+        {{ [states('sensor.pv_power') | float(0),
+            states('sensor.load_power') | float(0)] | min | round(3) }}
+
+    - name: Live Solar To Battery Power
+      unique_id: live_solar_to_battery_power
+      device_class: power
+      unit_of_measurement: "kW"
+      state_class: measurement
+      state: >-
+        {% set solar_surplus = [states('sensor.pv_power') | float(0)
+                                 - states('sensor.live_solar_to_home_power') | float(0), 0] | max %}
+        {{ [solar_surplus,
+            states('sensor.live_battery_charge_power') | float(0)] | min | round(3) }}
+
+    - name: Live Solar To Grid Power
+      unique_id: live_solar_to_grid_power
+      device_class: power
+      unit_of_measurement: "kW"
+      state_class: measurement
+      state: >-
+        {{ states('sensor.live_grid_export_power') | float(0) | round(3) }}
+
+    - name: Live Grid To Battery Power
+      unique_id: live_grid_to_battery_power
+      device_class: power
+      unit_of_measurement: "kW"
+      state_class: measurement
+      state: >-
+        {% set battery_charge_from_grid = [
+             states('sensor.live_battery_charge_power') | float(0)
+             - states('sensor.live_solar_to_battery_power') | float(0), 0] | max %}
+        {{ [states('sensor.live_grid_import_power') | float(0),
+             battery_charge_from_grid] | min | round(3) }}
+
+    - name: Live Grid To Home Power
+      unique_id: live_grid_to_home_power
+      device_class: power
+      unit_of_measurement: "kW"
+      state_class: measurement
+      state: >-
+        {{ [states('sensor.live_grid_import_power') | float(0)
+            - states('sensor.live_grid_to_battery_power') | float(0), 0] | max | round(3) }}
 
     - name: Home Cost
       unique_id: home_cost

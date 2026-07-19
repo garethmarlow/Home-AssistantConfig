@@ -5,14 +5,6 @@
 ## can be cleaned up to present on a dashboard to show "what subjects do I need to prepare for today/tomorrow/after the weekend?"
 ## References custom_templates/templates.jinja
 
-## Create calendars using the HACS ics calendar integration
-ics_calendar:
-  calendars:
-    - name: "Daniel school schedule"
-      url: !secret daniel_calendar_url
-    - name: "Rory school schedule"
-      url: !secret rory_calendar_url
-
 ## Sensor which works out whether the next two schooldays are Today and Tomorrow, or straddle the weekend
 ## Also generates a date-time string in the format YYYY-MM-DD 00:00 to feed to the calendar list events service
 template:

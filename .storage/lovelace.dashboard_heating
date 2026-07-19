@@ -1,0 +1,852 @@
+{
+  "version": 1,
+  "minor_version": 1,
+  "key": "lovelace.dashboard_heating",
+  "data": {
+    "config": {
+      "wallpanel": {
+        "enabled": false,
+        "hide_toolbar": true,
+        "hide_sidebar": true,
+        "fullscreen": true,
+        "idle_time": 0
+      },
+      "views": [
+        {
+          "title": "HA Analytics Sandpit",
+          "path": "test-graph-area",
+          "icon": "mdi:test-tube",
+          "type": "sidebar",
+          "theme": "okabe_ito",
+          "badges": [],
+          "cards": [
+            {
+              "type": "markdown",
+              "title": "Solar reserve strategy",
+              "content": "### {{ state_attr('sensor.battery_solar_strategy', 'reason') | default('Awaiting a reserve decision', true) }}\n\n🔋 **{{ states('sensor.battery_soc') }}%** · {{ state_attr('sensor.battery_solar_strategy', 'remaining_capacity') | float(0) | round(1) }} kWh available\n\n🕒 **Next off-peak:** {{ (state_attr('sensor.battery_solar_strategy', 'time_to_next_off_peak') | float(0) * 3600) | timestamp_custom('%Hh %Mm', false) }}\n\n🛟 **Reserve:** {{ state_attr('sensor.battery_solar_strategy', 'reserve_required') | float(0) | round(1) }} kWh · **headroom:** {{ state_attr('sensor.battery_solar_strategy', 'export_headroom') | float(0) | round(1) }} kWh\n\n{% set mitigation = states.binary_sensor.battery_co2_mitigation %}{% set slots = state_attr('sensor.carbon_intensity_uk', 'forecast') | default([], true) %}{% set start_raw = mitigation.attributes.off_peak_next_start | default(none, true) %}{% set end_raw = mitigation.attributes.off_peak_next_end | default(none, true) %}{% set start_at = start_raw | as_datetime if start_raw else none %}{% set end_at = end_raw | as_datetime if end_raw else none %}{% set threshold = mitigation.attributes.max_chargeable_intensity | float(none) %}{% set current_soc = mitigation.attributes.current_soc | float(0) %}{% set target_soc = mitigation.attributes.target_soc | float(0) %}{% set ns = namespace(chargeable=[]) %}{% if start_at and end_at and threshold is not none and current_soc < target_soc %}{% for slot in slots %}{% set slot_start = slot.get('from') | as_datetime %}{% set slot_end = slot.get('to') | as_datetime if slot.get('to') else slot_start + timedelta(hours=1) %}{% set intensity = slot.get('intensity') | float(none) %}{% if slot_start and intensity is not none and slot_start >= start_at and slot_start < end_at and intensity <= threshold %}{% set ns.chargeable = ns.chargeable + [slot_start.strftime('%H:%M') ~ '–' ~ slot_end.strftime('%H:%M') ~ ' (' ~ (intensity | round(0) | int) ~ ' gCO₂e)' ] %}{% endif %}{% endfor %}{% endif %}🌍 **Chargeable slots:** {% if ns.chargeable %}{{ ns.chargeable | join(' · ') }}{% elif slots %}none below threshold{% else %}forecast unavailable{% endif %}\n\n🎯 **Max chargeable:** {{ state_attr('binary_sensor.battery_co2_mitigation', 'max_chargeable_intensity') | default('—', true) }} gCO₂e/kWh\n\n🤖 {{ states('input_select.energy_automation_mode') }} · ⚙️ {{ states('select.work_mode') }}"
+            },
+            {
+              "type": "markdown",
+              "title": "Carbon forecast and charging plan",
+              "content": "Forecast grid CO₂ intensity with **navy** recorded/current EV dispatch, **light blue** planned EV slots, **dark grey** recorded/current domestic-battery charge requests, and **light grey** projected battery-charge windows. The magenta line is historical grid CO₂; the blue line is battery SOC."
+            },
+            {
+              "type": "vertical-stack",
+              "cards": [
+                {
+                  "type": "custom:apexcharts-card",
+                  "experimental": {
+                    "color_threshold": true
+                  },
+                  "now": {
+                    "show": true,
+                    "color": "#D55E00",
+                    "label": "Now"
+                  },
+                  "graph_span": "48h",
+                  "span": {
+                    "start": "day",
+                    "offset": "-12h"
+                  },
+                  "apex_config": {
+                    "legend": {
+                      "show": false
+                    },
+                    "tooltip": {
+                      "enabled": true
+                    },
+                    "grid": {
+                      "show": false
+                    },
+                    "xaxis": {
+                      "axisTicks": {
+                        "show": false
+                      },
+                      "axisBorder": {
+                        "show": false
+                      }
+                    }
+                  },
+                  "header": {
+                    "show": true,
+                    "title": "Carbon forecast · EV dispatch · domestic battery plan",
+                    "show_states": false
+                  },
+                  "update_interval": "5min",
+                  "yaxis": [
+                    {
+                      "id": "primary",
+                      "min": 0,
+                      "apex_config": {
+                        "tickAmount": 5,
+                        "decimalsInFloat": 0,
+                        "forceNiceScale": true,
+                        "title": {
+                          "text": "gCO2eq/kWh"
+                        }
+                      }
+                    },
+                    {
+                      "id": "binary",
+                      "min": 0,
+                      "max": 1,
+                      "show": false
+                    },
+                    {
+                      "id": "percent",
+                      "min": 0,
+                      "max": 100,
+                      "opposite": true,
+                      "show": true,
+                      "apex_config": {
+                        "tickAmount": 5,
+                        "decimalsInFloat": 0,
+                        "title": {
+                          "text": "% charge"
+                        }
+                      }
+                    }
+                  ],
+                  "series": [
+                    {
+                      "entity": "binary_sensor.octopus_energy_00000000_0002_4000_8020_00000005cc63_intelligent_dispatching",
+                      "yaxis_id": "binary",
+                      "name": "EV dispatch",
+                      "type": "area",
+                      "curve": "stepline",
+                      "color": "#0072B2",
+                      "extend_to": "now",
+                      "opacity": 0.75,
+                      "stroke_width": 0,
+                      "transform": "return x === \"on\" ? 1 : 0;"
+                    },
+                    {
+                      "entity": "binary_sensor.octopus_energy_00000000_0002_4000_8020_00000005cc63_intelligent_dispatching",
+                      "yaxis_id": "binary",
+                      "name": "Planned EV dispatch",
+                      "type": "area",
+                      "curve": "stepline",
+                      "color": "#56B4E9",
+                      "opacity": 0.5,
+                      "stroke_width": 2,
+                      "data_generator": "const slots = entity.attributes.planned_dispatches || []; const data = []; for (let i = 0; i < slots.length; i += 1) { data.push([new Date(slots[i].start).getTime(), 0.72]); data.push([new Date(slots[i].end).getTime(), 0]); } return data;"
+                    },
+                    {
+                      "entity": "input_boolean.charge_requested",
+                      "yaxis_id": "binary",
+                      "name": "Domestic battery charge request",
+                      "type": "area",
+                      "curve": "stepline",
+                      "color": "#999999",
+                      "extend_to": "now",
+                      "opacity": 1,
+                      "stroke_width": 0,
+                      "transform": "return x === \"on\" ? 0.9 : 0;",
+                      "group_by": {
+                        "func": "max",
+                        "duration": "30m"
+                      }
+                    },
+                    {
+                      "entity": "sensor.battery_co2_charge_plan",
+                      "yaxis_id": "binary",
+                      "name": "Projected domestic battery charge",
+                      "type": "area",
+                      "curve": "stepline",
+                      "color": "#999999",
+                      "opacity": 0.25,
+                      "stroke_width": 2,
+                      "data_generator": "const raw = entity.attributes.slots || '[]'; let slots = []; try { slots = Array.isArray(raw) ? raw : JSON.parse(raw); } catch (error) { return []; } const data = []; for (let i = 0; i < slots.length; i += 1) { data.push([new Date(slots[i].start).getTime(), 0.9]); data.push([new Date(slots[i].end).getTime(), 0]); } return data;"
+                    },
+                    {
+                      "entity": "sensor.battery_soc",
+                      "yaxis_id": "percent",
+                      "stroke_width": 2,
+                      "extend_to": "now",
+                      "fill_raw": "last",
+                      "name": "Battery SOC",
+                      "unit": "%",
+                      "color": "#56B4E9"
+                    },
+                    {
+                      "entity": "sensor.carbon_intensity_uk",
+                      "unit": "g/kWh",
+                      "type": "area",
+                      "name": "Forecast grid CO₂ intensity",
+                      "show": {
+                        "legend_value": false
+                      },
+                      "data_generator": "return entity.attributes.forecast.map(obj => {\n  return [new Date(obj.from).getTime(), obj.intensity];\n});\n",
+                      "stroke_width": 0,
+                      "color_threshold": [
+                        {
+                          "value": 39,
+                          "color": "#009E73",
+                          "opacity": 1
+                        },
+                        {
+                          "value": 120,
+                          "color": "#009E73"
+                        },
+                        {
+                          "value": 199,
+                          "color": "#E69F00"
+                        },
+                        {
+                          "value": 290,
+                          "color": "#D55E00"
+                        }
+                      ],
+                      "yaxis_id": "primary"
+                    },
+                    {
+                      "entity": "sensor.carbon_intensity_uk",
+                      "attribute": "current_period_forecast",
+                      "name": "Current grid CO₂ intensity",
+                      "extend_to": "now",
+                      "unit": "g/kWh",
+                      "color": "#CC79A7",
+                      "stroke_width": 2,
+                      "show": {
+                        "legend_value": false
+                      },
+                      "yaxis_id": "primary",
+                      "fill_raw": "last"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "markdown",
+              "content": " ",
+              "title": "Domestic Energy Flows"
+            },
+            {
+              "type": "custom:apexcharts-card",
+              "update_interval": "10m",
+              "layout": "minimal",
+              "graph_span": "24h",
+              "span": {
+                "start": "day",
+                "offset": "+5min"
+              },
+              "now": {
+                "show": true,
+                "color": "#D55E00",
+                "label": "Now"
+              },
+              "apex_config": {
+                "chart": {
+                  "stacked": false,
+                  "toolbar": {
+                    "show": false
+                  }
+                },
+                "legend": {
+                  "show": false
+                },
+                "fill": {
+                  "type": "solid",
+                  "opacity": 0.45
+                }
+              },
+              "header": {
+                "show": true,
+                "title": "Energy flow and carbon",
+                "show_states": true,
+                "colorize_states": true
+              },
+              "all_series_config": {
+                "stroke_width": 2
+              },
+              "series": [
+                {
+                  "entity": "sensor.energy_chart_grid_pull_plus_ev_and_battery",
+                  "yaxis_id": "flow",
+                  "name": "⚡ + 🚗 + 🔋",
+                  "type": "area",
+                  "color": "#303030",
+                  "opacity": 1,
+                  "stroke_width": 4,
+                  "unit": "kW",
+                  "transform": "return Math.max(0, 2 * x);",
+                  "group_by": {
+                    "func": "diff",
+                    "duration": "30m"
+                  },
+                  "extend_to": "now",
+                  "show": {
+                    "in_header": false
+                  }
+                },
+                {
+                  "entity": "sensor.energy_chart_grid_pull_plus_ev",
+                  "yaxis_id": "flow",
+                  "name": "⚡ + 🚗",
+                  "type": "area",
+                  "color": "#0072B2",
+                  "opacity": 0.8,
+                  "stroke_width": 3,
+                  "unit": "kW",
+                  "transform": "return Math.max(0, 2 * x);",
+                  "group_by": {
+                    "func": "diff",
+                    "duration": "30m"
+                  },
+                  "extend_to": "now",
+                  "show": {
+                    "in_header": false
+                  }
+                },
+                {
+                  "entity": "sensor.energy_chart_grid_pull",
+                  "yaxis_id": "flow",
+                  "name": "⚡ Grid pull",
+                  "type": "area",
+                  "color": "#56B4E9",
+                  "opacity": 0.6,
+                  "stroke_width": 2,
+                  "unit": "kW",
+                  "transform": "return Math.max(0, 2 * x);",
+                  "group_by": {
+                    "func": "diff",
+                    "duration": "30m"
+                  },
+                  "extend_to": "now",
+                  "show": {
+                    "in_header": false
+                  }
+                },
+                {
+                  "entity": "sensor.octopus_energy_gas_g4p71420101600_3083012410_current_accumulative_consumption_kwh",
+                  "yaxis_id": "flow",
+                  "name": "🔥 Gas",
+                  "type": "area",
+                  "color": "#D55E00",
+                  "stroke_width": 3,
+                  "unit": "kW",
+                  "data_generator": "const charges = entity.attributes.charges || []; const data = []; charges.forEach((charge) => { const start = new Date(charge.start).getTime(); const end = new Date(charge.end).getTime(); const hours = (end - start) / 3600000; const consumption = Math.max(0, Number(charge.consumption) || 0); if (Number.isFinite(start) && Number.isFinite(end) && end > start) { data.push([start + (end - start) / 2, consumption / hours]); } }); return data.sort((a, b) => a[0] - b[0]);",
+                  "show": {
+                    "in_header": false
+                  }
+                },
+                {
+                  "entity": "sensor.energy_chart_metered_consumption_excluding_ev",
+                  "yaxis_id": "flow",
+                  "name": "🏠 Metered electricity (excl. EV)",
+                  "type": "area",
+                  "color": "#009E73",
+                  "unit": "kW",
+                  "transform": "return Math.max(0, 2 * x);",
+                  "group_by": {
+                    "func": "diff",
+                    "duration": "30m"
+                  },
+                  "extend_to": "now",
+                  "show": {
+                    "in_header": false
+                  }
+                },
+                {
+                  "entity": "sensor.solar_energy_today",
+                  "yaxis_id": "flow",
+                  "name": "☀️ Solar generation",
+                  "type": "area",
+                  "color": "#E69F00",
+                  "unit": "kW",
+                  "transform": "return Math.max(0, 2 * x);",
+                  "group_by": {
+                    "func": "diff",
+                    "duration": "30m"
+                  },
+                  "extend_to": "now",
+                  "show": {
+                    "in_header": false
+                  }
+                },
+                {
+                  "entity": "sensor.home_actual_co2_today",
+                  "yaxis_id": "flow",
+                  "name": "Actual CO₂",
+                  "type": "area",
+                  "color": "#D55E00",
+                  "stroke_width": 3,
+                  "unit": "kgCO₂e/hr",
+                  "transform": "return -2 * Math.max(0, x);",
+                  "group_by": {
+                    "func": "diff",
+                    "duration": "30m"
+                  },
+                  "extend_to": false,
+                  "show": {
+                    "in_header": false
+                  }
+                },
+                {
+                  "entity": "sensor.home_unmitigated_co2_today",
+                  "yaxis_id": "flow",
+                  "name": "Unmitigated CO₂",
+                  "type": "area",
+                  "color": "#CC79A7",
+                  "stroke_width": 2,
+                  "unit": "kgCO₂e/hr",
+                  "transform": "return -2 * Math.max(0, x);",
+                  "group_by": {
+                    "func": "diff",
+                    "duration": "30m"
+                  },
+                  "extend_to": false,
+                  "show": {
+                    "in_header": false
+                  }
+                },
+                {
+                  "entity": "sensor.octopus_energy_gas_g4p71420101600_3083012410_current_accumulative_consumption_kwh",
+                  "yaxis_id": "flow",
+                  "name": "Gas combustion CO₂ (included in both)",
+                  "type": "area",
+                  "color": "#A64B00",
+                  "opacity": 0.4,
+                  "stroke_width": 2,
+                  "unit": "kgCO₂e/hr",
+                  "data_generator": "const charges = entity.attributes.charges || []; const data = []; charges.forEach((charge) => { const start = new Date(charge.start).getTime(); const end = new Date(charge.end).getTime(); const hours = (end - start) / 3600000; const consumption = Math.max(0, Number(charge.consumption) || 0); if (Number.isFinite(start) && Number.isFinite(end) && end > start) { data.push([start + (end - start) / 2, -consumption * 0.185 / hours]); } }); return data.sort((a, b) => a[0] - b[0]);",
+                  "show": {
+                    "in_header": false
+                  }
+                },
+                {
+                  "entity": "sensor.energy_chart_metered_consumption_excluding_ev",
+                  "yaxis_id": "summary",
+                  "name": "🏠 Domestic today",
+                  "color": "#009E73",
+                  "show": {
+                    "in_chart": false
+                  }
+                },
+                {
+                  "entity": "sensor.car_charger_12_1d",
+                  "yaxis_id": "summary",
+                  "name": "🚗 Car today",
+                  "color": "#0072B2",
+                  "show": {
+                    "in_chart": false
+                  }
+                },
+                {
+                  "entity": "sensor.home_gas_daily",
+                  "yaxis_id": "summary",
+                  "name": "🔥 Gas today",
+                  "color": "#D55E00",
+                  "show": {
+                    "in_chart": false
+                  }
+                },
+                {
+                  "entity": "sensor.solar_energy_today",
+                  "yaxis_id": "summary",
+                  "name": "☀️ Solar today",
+                  "color": "#E69F00",
+                  "show": {
+                    "in_chart": false
+                  }
+                },
+                {
+                  "entity": "sensor.home_actual_co2_today",
+                  "yaxis_id": "summary",
+                  "name": "Actual CO₂ today",
+                  "color": "#D55E00",
+                  "show": {
+                    "in_chart": false
+                  }
+                },
+                {
+                  "entity": "sensor.home_unmitigated_co2_today",
+                  "yaxis_id": "summary",
+                  "name": "Unmitigated CO₂ today",
+                  "color": "#CC79A7",
+                  "show": {
+                    "in_chart": false
+                  }
+                }
+              ],
+              "yaxis": [
+                {
+                  "id": "flow",
+                  "show": false
+                },
+                {
+                  "id": "summary",
+                  "show": false
+                }
+              ],
+              "style": "ha-card {\nheight: 350px !important;\n}"
+            },
+            {
+              "type": "custom:sankey-chart",
+              "style": "ha-card {\nheight: 500px !important;\n}",
+              "show_names": true,
+              "wide": true,
+              "show_icons": false,
+              "unit_prefix": "k",
+              "round": 1,
+              "min_state": 0.01,
+              "nodes": [
+                {
+                  "id": "gas_source",
+                  "entity_id": "sensor.home_gas_daily",
+                  "section": 0,
+                  "name": "🔥",
+                  "color": "#D55E00"
+                },
+                {
+                  "id": "grid_fossil_source",
+                  "entity_id": "sensor.sankey_grid_fossil_today",
+                  "section": 0,
+                  "name": "💩",
+                  "color": "#CC79A7"
+                },
+                {
+                  "id": "grid_low_carbon_source",
+                  "entity_id": "sensor.sankey_grid_low_carbon_today",
+                  "section": 0,
+                  "name": "♻️",
+                  "color": "#009E73"
+                },
+                {
+                  "id": "solar_source",
+                  "entity_id": "sensor.solar_energy_today",
+                  "section": 0,
+                  "name": "☀️",
+                  "color": "#E69F00"
+                },
+                {
+                  "id": "gas_stage_2",
+                  "section": 1,
+                  "type": "passthrough"
+                },
+                {
+                  "id": "grid_import",
+                  "entity_id": "sensor.home_energy_daily",
+                  "section": 1,
+                  "name": "⚡➡️",
+                  "color": "#0072B2",
+                  "icon": "mdi:transmission-tower-import"
+                },
+                {
+                  "id": "solar_stage_2",
+                  "section": 1,
+                  "type": "passthrough",
+                  "color": "#E69F00"
+                },
+                {
+                  "id": "battery_discharge",
+                  "entity_id": "sensor.battery_discharge_today",
+                  "section": 1,
+                  "name": "🔋➡️",
+                  "color": "#000000",
+                  "icon": "mdi:battery"
+                },
+                {
+                  "id": "gas_stage_3",
+                  "section": 2,
+                  "type": "passthrough"
+                },
+                {
+                  "id": "property_electricity",
+                  "entity_id": "sensor.sankey_property_electricity_today",
+                  "section": 2,
+                  "name": "🏠⚡️",
+                  "color": "#56B4E9"
+                },
+                {
+                  "id": "gas_stage_4",
+                  "section": 3,
+                  "type": "passthrough"
+                },
+                {
+                  "id": "home_energy",
+                  "entity_id": "sensor.sankey_home_energy_today",
+                  "section": 3,
+                  "name": "🏠",
+                  "color": "#56B4E9"
+                },
+                {
+                  "id": "solar_export",
+                  "entity_id": "sensor.feed_in_energy_today",
+                  "section": 3,
+                  "name": "☀️➡️",
+                  "color": "#E69F00"
+                },
+                {
+                  "id": "gas_stage_5",
+                  "entity_id": "sensor.home_gas_daily",
+                  "section": 4,
+                  "name": "🔥",
+                  "color": "#D55E00"
+                },
+                {
+                  "id": "battery_charge",
+                  "entity_id": "sensor.battery_charge_today",
+                  "section": 4,
+                  "name": "🔋➡️",
+                  "color": "#000000",
+                  "icon": "mdi:battery"
+                },
+                {
+                  "id": "ev",
+                  "entity_id": "sensor.car_charger_12_1d",
+                  "section": 4,
+                  "name": "🚙",
+                  "color": "#56B4E9",
+                  "icon": "mdi:ev-plug-type2"
+                },
+                {
+                  "id": "cooking_and_washing",
+                  "entity_id": "sensor.cooking_and_washing_energy",
+                  "section": 4,
+                  "name": "🧺🍖",
+                  "color": "#56B4E9",
+                  "icon": "mdi:washing-machine"
+                },
+                {
+                  "id": "computers",
+                  "entity_id": "sensor.computer_energy",
+                  "section": 4,
+                  "name": "🖥️🗄️",
+                  "color": "#56B4E9",
+                  "icon": "mdi:laptop"
+                },
+                {
+                  "id": "entertainment",
+                  "entity_id": "sensor.entertainment_energy",
+                  "section": 4,
+                  "name": "📺🎮",
+                  "color": "#56B4E9",
+                  "icon": "mdi:console"
+                },
+                {
+                  "id": "lighting",
+                  "entity_id": "sensor.lighting_energy",
+                  "section": 4,
+                  "name": "💡",
+                  "color": "#56B4E9",
+                  "icon": "mdi:lamps"
+                },
+                {
+                  "id": "other",
+                  "entity_id": "sensor.other_energy",
+                  "section": 4,
+                  "name": "🔌",
+                  "color": "#56B4E9",
+                  "icon": "mdi:slot-machine"
+                }
+              ],
+              "links": [
+                {
+                  "source": "gas_source",
+                  "target": "gas_stage_2"
+                },
+                {
+                  "source": "gas_stage_2",
+                  "target": "gas_stage_3"
+                },
+                {
+                  "source": "gas_stage_3",
+                  "target": "gas_stage_4"
+                },
+                {
+                  "source": "gas_stage_4",
+                  "target": "gas_stage_5"
+                },
+                {
+                  "source": "grid_fossil_source",
+                  "target": "grid_import"
+                },
+                {
+                  "source": "grid_low_carbon_source",
+                  "target": "grid_import"
+                },
+                {
+                  "source": "solar_source",
+                  "target": "solar_stage_2"
+                },
+                {
+                  "source": "solar_stage_2",
+                  "target": "property_electricity"
+                },
+                {
+                  "source": "grid_import",
+                  "target": "property_electricity"
+                },
+                {
+                  "source": "battery_discharge",
+                  "target": "property_electricity"
+                },
+                {
+                  "source": "property_electricity",
+                  "target": "solar_export"
+                },
+                {
+                  "source": "property_electricity",
+                  "target": "home_energy"
+                },
+                {
+                  "source": "home_energy",
+                  "target": "battery_charge",
+                  "value": "sensor.battery_charge_today"
+                },
+                {
+                  "source": "home_energy",
+                  "target": "ev"
+                },
+                {
+                  "source": "home_energy",
+                  "target": "cooking_and_washing"
+                },
+                {
+                  "source": "home_energy",
+                  "target": "computers"
+                },
+                {
+                  "source": "home_energy",
+                  "target": "entertainment"
+                },
+                {
+                  "source": "home_energy",
+                  "target": "lighting"
+                },
+                {
+                  "source": "home_energy",
+                  "target": "other"
+                }
+              ],
+              "height": 450
+            },
+            {
+              "type": "vertical-stack",
+              "cards": [
+                {
+                  "type": "entities",
+                  "title": "Automation controls and tuning",
+                  "state_color": true,
+                  "entities": [
+                    {
+                      "entity": "input_select.energy_automation_mode",
+                      "name": "Operating mode"
+                    },
+                    {
+                      "entity": "select.work_mode",
+                      "name": "Inverter work mode"
+                    },
+                    {
+                      "type": "section",
+                      "label": "Reserve tuning"
+                    },
+                    {
+                      "entity": "input_number.battery_normal_burn_rate",
+                      "name": "Normal burn rate"
+                    },
+                    {
+                      "entity": "input_number.battery_safety_buffer",
+                      "name": "Safety buffer"
+                    },
+                    {
+                      "entity": "input_number.battery_export_hysteresis",
+                      "name": "Export hysteresis"
+                    }
+                  ]
+                },
+                {
+                  "type": "horizontal-stack",
+                  "cards": [
+                    {
+                      "type": "button",
+                      "name": "Reload automations",
+                      "icon": "mdi:reload",
+                      "tap_action": {
+                        "action": "call-service",
+                        "service": "automation.reload"
+                      }
+                    },
+                    {
+                      "type": "button",
+                      "name": "Apply IGO slots",
+                      "icon": "mdi:car-electric",
+                      "tap_action": {
+                        "action": "call-service",
+                        "service": "automation.trigger",
+                        "target": {
+                          "entity_id": "automation.octopus_intelligent_go_peak_period_slot_management"
+                        }
+                      }
+                    },
+                    {
+                      "type": "button",
+                      "name": "Restart Home Assistant",
+                      "icon": "mdi:restart-alert",
+                      "tap_action": {
+                        "action": "call-service",
+                        "service": "homeassistant.restart"
+                      },
+                      "confirmation": {
+                        "text": "Restart Home Assistant? Automations and dashboards will be briefly unavailable."
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "entities",
+                  "title": "Inverter charge periods",
+                  "state_color": true,
+                  "entities": [
+                    {
+                      "type": "section",
+                      "label": "Period 1 — Intelligent Go"
+                    },
+                    {
+                      "entity": "sensor.time_period_1_start",
+                      "name": "Start"
+                    },
+                    {
+                      "entity": "sensor.time_period_1_end",
+                      "name": "End"
+                    },
+                    {
+                      "entity": "binary_sensor.time_period_1_enable_force_charge",
+                      "name": "Force charge"
+                    },
+                    {
+                      "entity": "binary_sensor.time_period_1_enable_charge_from_grid",
+                      "name": "Charge from grid"
+                    },
+                    {
+                      "type": "section",
+                      "label": "Period 2 — overnight fallback"
+                    },
+                    {
+                      "entity": "sensor.time_period_2_start",
+                      "name": "Start"
+                    },
+                    {
+                      "entity": "sensor.time_period_2_end",
+                      "name": "End"
+                    },
+                    {
+                      "entity": "binary_sensor.time_period_2_enable_force_charge",
+                      "name": "Force charge"
+                    },
+                    {
+                      "entity": "binary_sensor.time_period_2_enable_charge_from_grid",
+                      "name": "Charge from grid"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

@@ -22,7 +22,6 @@ shell_command: !include shell_commands.yaml
 template: !include templates.yaml
 zone: !include zone.yaml
 sensor: !include sensors.yaml
-switch: !include switch.yaml
 # device_tracker: !include device_tracker.yaml
 calendar: !include calendars.yaml
 input_number: !include input_numbers.yaml
@@ -62,7 +61,7 @@ lovelace:
       type: module
     - url: /hacsfiles/Homekit-panel-card/homekit-panel-card.js
       type: module
-    - url: /hacsfiles/ha-sankey-chart/ha-sankey-chart.js
+    - url: /hacsfiles/ha-sankey-chart/ha-sankey-chart.js?v=6.3.0
       type: module
     - url: /hacsfiles/weather-radar-card/weather-radar-card.js 
       type: module
@@ -110,28 +109,6 @@ recorder:
       - sensor.icloud3_event_log
 
 history:
-
-influxdb:
-  api_version: 2
-  ssl: false
-  host: !secret influxdb_host
-  port: 8086
-  token: !secret influxdb_token
-  organization: !secret influx_org
-  bucket: homeassistant
-  tags:
-    source: HomeAssistant
-  tags_attributes:
-    - friendly_name
-  default_measurement: units
-  ignore_attributes:
-    - icon
-  exclude:    # Customise to fit your needs
-    entities:
-      - zone.home
-    domains:
-      - persistent_notification
-      - person
 
 evohome:
   username: !secret evohome_username

@@ -108,7 +108,11 @@
   mode: single
 - id: '1680374296097'
   alias: Home Internal Consumption Split
-  description: ''
+  description: >-
+    Accumulates unmitigated electricity carbon from positive Emporia domestic
+    consumption deltas (including EV charging but excluding battery charging)
+    at the grid carbon intensity at the time of each delta. Gas combustion is
+    added separately to the daily total by sensor.home_gas_co2_today.
   trigger:
   - platform: state
     entity_id:
@@ -140,6 +144,34 @@
     target:
       entity_id: input_number.home_shadow_cost
   mode: single
+- id: home_solar_export_carbon_credit_accumulator
+  alias: Home Solar Export Carbon Credit Accumulator
+  description: >-
+    Values each positive feed-in energy delta at the grid carbon intensity at
+    the time of export. This produces a separate, increasing carbon-credit
+    ledger for exported low-carbon electricity; import and gas carbon remain
+    independently auditable.
+  trigger:
+  - platform: state
+    entity_id:
+    - sensor.feed_in_energy_total
+  condition:
+  - condition: template
+    value_template: >-
+      {{ trigger.from_state is not none
+         and (trigger.to_state.state | float(0) - trigger.from_state.state | float(0)) > 0 }}
+  action:
+  - service: input_number.set_value
+    target:
+      entity_id: input_number.solar_export_carbon_credit_home
+    data:
+      value: >-
+        {% set delta = trigger.to_state.state | float(0) - trigger.from_state.state | float(0) %}
+        {% set intensity = states('sensor.co2_signal_co2_intensity') | float(0) %}
+        {{ (states('input_number.solar_export_carbon_credit_home') | float(0)
+            + (delta * intensity / 1000)) | round(6) }}
+  mode: queued
+  max: 20
 - id: '1697985195881'
   alias: Tumble Dryer power activity
   description: Monitors tumble dryer status
@@ -231,7 +263,7 @@
       action: switch.turn_off
     - target:
         entity_id:
-        - switch.lava_lamp_red_switch
+        - switch.lava_lamp
       data: {}
       action: switch.turn_off
     else:
@@ -242,7 +274,7 @@
     - metadata: {}
       data: {}
       target:
-        entity_id: switch.lava_lamp_red_switch
+        entity_id: switch.lava_lamp
       action: switch.turn_on
   mode: single
 - id: '1698274812007'

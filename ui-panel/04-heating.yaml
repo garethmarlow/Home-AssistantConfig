@@ -1,6 +1,9 @@
 # lovelace_gen
+theme: okabe_ito
 title: Heating
 type: custom:grid-layout
+icon: mdi:radiator
+badges: []
 
 {% macro evohome_zone_button(evohome_zone) %}
 {% if evohome_zone == 'dhw_controller' %}
@@ -9,11 +12,11 @@ type: custom:grid-layout
 {% set entity = 'climate.' + evohome_zone %}
 {% endif %}
       - type: custom:mini-graph-card
-        entities: 
+        entities:
           - entity: {{entity}}
             attribute: current_temperature
             unit: °C
-          - color: gray
+          - color: '#999999'
             entity: sensor.night_state
             name: Night
             show_legend: false
@@ -23,36 +26,37 @@ type: custom:grid-layout
         icon: mdi:thermometer
         align_header: left
         align_icon: left
-        font-size: 20
+        height: 115
+        font-size: 16
         show:
           points: false
           labels: false
           labels_secondary: false
         color_thresholds:
           - value: 15
-            color: '#668cff'
+            color: '#56B4E9'
           - value: 18
-            color: '#ffff00'
+            color: '#E69F00'
           - value: 20
-            color: '#ff0000'
-        tap_action: 
+            color: '#D55E00'
+        tap_action:
           action: call-service
           service: script.evohome_zone_boost_management
           service_data:
             evohome_zone: {{evohome_zone}}
-        card_mod: 
+        card_mod:
           style: |
             ha-card {
               {% raw %}{% if is_state('timer.{% endraw %}{{evohome_zone}}{% raw %}_boost','active' )%}
-              --ha-card-background: coral;
+              --ha-card-background: rgba(0, 114, 178, 0.16);
               {% endif %}{% endraw %}
             }
             ha-card .state {
-              font-size: 10px;
+              font-size: 14px;
             }
             ha-card .name {
-              font-size: 12px;
-              font-weight: normal;
+              font-size: 15px;
+              font-weight: 600;
             }
 {% endmacro %}
 
@@ -69,64 +73,93 @@ type: custom:grid-layout
   "shower_room",
   "attic_study",
   "elly_s_room",
-  "dhw_controller"  
+  "dhw_controller"
 ] %}
 
 layout:
-  grid-template-columns: 317px 317px 317px 317px
-  grid-template-rows: 210px 105px 105px 105px 105px 100px
-  max_cols: 4
-icon: mdi:radiator
-badges: []
-cards:
-  - type: vertical-stack
-    style: |
-      ha-card {
-      height: 210px !important;
-      }
-    view_layout:
-      grid-column: 4 / 4
-      grid-row: 1 / 1 
-    cards:
-    - type: custom:stack-in-card
-      cards:
-      - type: horizontal-stack
-        cards:
-          - show_name: true
-            show_icon: true
-            type: button
-            icon: mdi:radiator
-            tap_action:
-              action: navigate
-              navigation_path: /lovelace-panel/3?wp_enabled=true
-          - type: button
-            icon: mdi:battery
-            tap_action:
-              action: navigate
-              navigation_path: /lovelace-panel/2?wp_enabled=true
-          - type: button
-            icon: mdi:transmission-tower-import
-            tap_action:
-              action: navigate
-              navigation_path: /lovelace-panel/1?wp_enabled=true
-          - type: button
-            icon: mdi:home
-            tap_action:
-              action: navigate
-              navigation_path: /lovelace-panel/?wp_enabled=true
-    - type: custom:digital-clock
-      style: |
-        ha-card {
-        height: 147px !important;
-        }    
+  grid-template-columns: repeat(4, minmax(0, 1fr))
+  grid-template-rows: 64px auto
+  grid-template-areas: |
+    "nav nav nav nav"
+    "zones zones zones zones"
+  grid-gap: 12px
+  padding: 12px
+  mediaquery:
+    "(max-width: 800px)":
+      grid-template-columns: minmax(0, 1fr)
+      grid-template-rows: auto
+      grid-template-areas: |
+        "zones_mobile"
+    "(max-aspect-ratio: 159/100) and (min-width: 801px)":
+      grid-template-columns: repeat(4, minmax(0, 1fr))
+      grid-template-rows: auto
+      grid-template-areas: |
+        "zones zones zones zones"
 
+cards:
   - type: grid
     columns: 5
+    square: false
     view_layout:
-      grid-column: 1/4
-      grid-row: 1/4
-    cards:    
+      grid-area: nav
+      show:
+        mediaquery: "(min-width: 801px) and (min-aspect-ratio: 8/5)"
+    cards:
+      - type: custom:button-card
+        template: kiosk_navigation
+        variables: { destination: /lovelace-panel }
+        name: Home
+        icon: mdi:home-variant
+        tap_action:
+          action: navigate
+          navigation_path: "/lovelace-panel/?wp_enabled=true"
+      - type: custom:button-card
+        template: kiosk_navigation
+        variables: { destination: /lovelace-panel/1 }
+        name: Power
+        icon: mdi:transmission-tower-import
+        tap_action:
+          action: navigate
+          navigation_path: "/lovelace-panel/1?wp_enabled=true"
+      - type: custom:button-card
+        template: kiosk_navigation
+        variables: { destination: /lovelace-panel/2 }
+        name: Battery
+        icon: mdi:battery
+        tap_action:
+          action: navigate
+          navigation_path: "/lovelace-panel/2?wp_enabled=true"
+      - type: custom:button-card
+        template: kiosk_navigation
+        variables: { destination: /lovelace-panel/3 }
+        name: Heating
+        icon: mdi:radiator
+        tap_action:
+          action: navigate
+          navigation_path: "/lovelace-panel/3?wp_enabled=true"
+      - type: custom:button-card
+        template: kiosk_clock
 
+  - type: grid
+    columns: 4
+    square: false
+    view_layout:
+      grid-area: zones
+      show:
+        mediaquery: "(min-width: 801px)"
+    cards:
+{% for evohome_zone in evohome_zones %}
+{{ evohome_zone_button(evohome_zone) }}
+{% endfor %}
+
+  - type: grid
+    columns: 2
+    square: false
+    view_layout:
+      grid-area: zones_mobile
+      show:
+        mediaquery: "(max-width: 800px)"
+    cards:
 {% for evohome_zone in evohome_zones %}
 {{ evohome_zone_button(evohome_zone) }}
 {% endfor %}

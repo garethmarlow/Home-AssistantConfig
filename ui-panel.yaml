@@ -4,6 +4,65 @@ wallpanel:
   hide_sidebar: true
   fullscreen: true
   idle_time: 0
+button_card_templates:
+  kiosk_navigation:
+    show_icon: true
+    show_name: true
+    size: 26px
+    styles:
+      card:
+        - height: 58px
+        - padding: 6px 10px
+        - border-radius: 14px
+        - box-shadow: none
+        - background: >-
+            [[[ const here = window.location.pathname.replace(/\/+$/, '') || '/lovelace-panel';
+                const destination = variables.destination.replace(/\/+$/, '') || '/lovelace-panel';
+                return here === destination
+                  ? 'var(--primary-color)'
+                  : 'var(--ha-card-background, var(--card-background-color))'; ]]]
+      icon:
+        - color: >-
+            [[[ const here = window.location.pathname.replace(/\/+$/, '') || '/lovelace-panel';
+                const destination = variables.destination.replace(/\/+$/, '') || '/lovelace-panel';
+                return here === destination ? 'var(--primary-background-color)' : 'var(--primary-color)'; ]]]
+      name:
+        - font-size: 14px
+        - font-weight: 600
+        - color: >-
+            [[[ const here = window.location.pathname.replace(/\/+$/, '') || '/lovelace-panel';
+                const destination = variables.destination.replace(/\/+$/, '') || '/lovelace-panel';
+                return here === destination ? 'var(--primary-background-color)' : 'var(--primary-text-color)'; ]]]
+  kiosk_clock:
+    entity: sensor.time
+    show_icon: false
+    show_name: false
+    show_state: true
+    custom_fields:
+      day: >-
+        [[[ return new Date().toLocaleDateString('en-GB', {
+              weekday: 'short', day: 'numeric', month: 'short'
+            }); ]]]
+    styles:
+      card:
+        - height: 58px
+        - padding: 4px 10px
+        - border-radius: 14px
+        - box-shadow: none
+        - background: var(--ha-card-background, var(--card-background-color))
+      grid:
+        - grid-template-areas: '"s" "day"'
+        - grid-template-rows: 1fr 14px
+      state:
+        - font-size: 24px
+        - font-weight: 700
+        - line-height: 1
+        - color: var(--primary-text-color)
+      custom_fields:
+        day:
+          - font-size: 11px
+          - line-height: 1
+          - color: var(--secondary-text-color)
 views:
   - !include ui-panel/01-main.yaml
   - !include ui-panel/02-power.yaml

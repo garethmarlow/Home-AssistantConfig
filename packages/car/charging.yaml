@@ -20,9 +20,6 @@ automation:
         device_id: eededf10b60d7d71d55d94b2517eecfd
         entity_id: switch.octopus_bump_charge
         domain: switch
-      - condition: state
-        entity_id: binary_sensor.octopus_power_up_active
-        state: "off"
     action:
       - type: turn_off
         device_id: 5912382cb94176f76b594aa4d8945945
@@ -52,4 +49,3 @@ automation:
         target:
           entity_id: switch.blue_shell_charger
     mode: single
-

@@ -23,5 +23,21 @@ home_energy_dirty_daily:
   cycle: daily
 
 home_gas_daily:
-  source: sensor.home_gas_consumption_cleaned
+  source: sensor.octopus_energy_gas_g4p71420101600_3083012410_current_total_consumption_kwh
+  cycle: daily
+
+# Daily electricity carbon accumulators.  Gas is added as a daily combustion
+# value in sensor.home_actual_co2_today / sensor.home_unmitigated_co2_today.
+home_electric_co2_daily:
+  source: sensor.home_co2
+  cycle: daily
+
+# The export credit is a separate increasing total, so it can be reset and
+# audited independently of imported-electricity carbon.
+home_solar_export_carbon_credit_daily:
+  source: sensor.home_solar_export_co2_credit
+  cycle: daily
+
+home_unmitigated_electric_co2_daily:
+  source: sensor.home_internal_shadow_carbon
   cycle: daily

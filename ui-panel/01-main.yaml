@@ -1,395 +1,282 @@
-theme: noctis_solarized
+theme: okabe_ito
 title: Main
 type: custom:grid-layout
-
-################ GRID CONFIGURATION
-layout:
-  grid-template-columns: 317px 317px 317px 317px
-  grid-template-rows: 210px 105px 105px 105px 105px 100px
-  max_cols: 4
 icon: mdi:home
 badges: []
+
+# Designed around the Kindle's wide landscape viewport.  The calendar is wide
+# enough to read and scroll within its own card; no empty clock column.
+layout:
+  grid-template-columns: repeat(4, minmax(0, 1fr))
+  # The camera defines this row's height from its native landscape frame.
+  # Let following content move down rather than forcing a cropped image.
+  grid-template-rows: 64px auto 220px 140px
+  grid-template-areas: |
+    "nav nav nav nav"
+    "weather weather camera camera"
+    "rory rory calendar calendar"
+    "household household calendar calendar"
+  grid-gap: 12px
+  padding: 12px
+  mediaquery:
+    "(max-width: 800px)":
+      grid-template-columns: minmax(0, 1fr)
+      grid-template-rows: auto auto auto auto auto
+      grid-template-areas: |
+        "weather_mobile"
+        "camera"
+        "rory"
+        "calendar"
+        "household"
+    "(max-aspect-ratio: 159/100) and (min-width: 801px)":
+      grid-template-columns: repeat(2, minmax(0, 1fr))
+      grid-template-rows: auto auto auto auto
+      grid-template-areas: |
+        "weather weather"
+        "camera camera"
+        "rory household"
+        "calendar calendar"
+
 cards:
-
-################ SHORT-RANGE WEATHER FORECAST
-
-  - type: custom:weather-card
-    style: |
-      ha-card {
-      height: 200px !important;
-      }
-    view_layout:
-      grid-column: 1 / span 2
-      grid-row: 1 / span 1
-    entity: weather.openweathermap
-    icons: "/hacsfiles/weather-card/icons/"
-    num_segments: 5 # optional, defaults to 12
-    name:  # optional, defaults to "Hourly Weather"
-    current: false
-    details: false
-    forecast: true
-    hourly_forecast: true
-    number_of_forecast: 3
-
-################ COLUMN 4 BIN COLLECTION
-
-  - type: custom:stack-in-card
-    view_layout:
-      grid-column: 4 / 4
-      grid-row: 4 / 4
-    cards:
-
-    - type: horizontal-stack
-      cards:
-        - type: custom:button-card
-          entity: sensor.next_bin_collection
-          show_name: false
-          show_icon: true
-          layout: name_state
-          show_state: null
-          icon: |
-            [[[
-              var collection = entity.state.split("|")[1]
-              if (collection == "Organic")
-              { return "mdi:leaf" }
-              else if (collection == "Recycle")
-              { return "mdi:recycle" }
-              else if (collection == "Domestic")
-              { return "mdi:trash-can-outline" }
-            ]]]
-          state:
-          - color: green
-            operator: template
-            value: '[[[ return entity.state.split("|")[1] == "Organic" ]]]'
-          - color: blue
-            operator: template
-            value: '[[[ return entity.state.split("|")[1] == "Recycle" ]]]'
-          - color: default
-            operator: template
-            value: '[[[ return entity.state.split("|")[1] == "Domestic" ]]]'
-
-
-        - type: conditional
-          conditions:
-          - entity: binary_sensor.next_bin_collection_double
-            state: "on"
-            show_icon: false
-
-          card:
-            type: custom:button-card
-            entity: sensor.next_bin_collection
-            show_name: false
-            show_icon: true
-            layout: name_state
-            show_state: null
-            icon: |
-              [[[
-                var collection = entity.state.split("|")[2]
-                if (collection == "Organic")
-                { return "mdi:leaf" }
-                else if (collection == "Recycle")
-                { return "mdi:recycle" }
-                else if (collection == "Domestic")
-                { return "mdi:trash-can-outline" }
-              ]]]
-            state:
-            - color: green
-              operator: template
-              value: '[[[ return entity.state.split("|")[2] == "Organic" ]]]'
-            - color: blue
-              operator: template
-              value: '[[[ return entity.state.split("|")[2] == "Recycle" ]]]'
-            - color: default
-              operator: template
-              value: '[[[ return entity.state.split("|")[2] == "Domestic" ]]]'
-
-    - type: markdown
-      style: |
-        ha-card {
-        font-size: 18px;
-        text-align: center;
-        }
-      content: |
-        Bin Day is {{ states.sensor.next_bin_collection.state.split("|")[0] }}
-
-################ COLUMN 4 LOCATIONS
-
-  - type: glance
+  - type: grid
     columns: 5
-    show_name: false
+    square: false
     view_layout:
-      grid-column: 4 / 4
-      grid-row: 2 / 2
-    style: |
-      ha-card {
-      height: 202px !important;
-      }
-    entities:
-      - entity: person.rory_marlow
-        name: RM
-      - entity: person.daniel_marlow
-        name: DM
-      - entity: person.nessa_marlow
-        name: NM
-      - entity: person.gareth_marlow
-        name: GM
-      - entity: device_tracker.blue_shell_location_tracker
-        name: Car
-        image: /local/blue_shell.jpg
-      - entity: sensor.rorys_iphone_battery_level
-      - entity: sensor.sulky_s_phone_battery_level
-      - entity: sensor.vanessas_iphone_battery_level
-      - entity: sensor.gareths_iphone_battery_level
-      - entity: sensor.blue_shell_battery
-
-################ COLUMN 1 - DANIEL
-
-  - type: custom:stack-in-card
-    view_layout:
-      grid-column: 1 / 1
-      grid-row: 2 / span 1
+      grid-area: nav
+      show:
+        mediaquery: "(min-width: 801px) and (min-aspect-ratio: 8/5)"
     cards:
-    - type: markdown
-      content: >-
-        ## Daniel
+      - type: custom:button-card
+        template: kiosk_navigation
+        variables: { destination: /lovelace-panel }
+        name: Home
+        icon: mdi:home-variant
+        tap_action:
+          action: navigate
+          navigation_path: "/lovelace-panel/?wp_enabled=true"
+      - type: custom:button-card
+        template: kiosk_navigation
+        variables: { destination: /lovelace-panel/1 }
+        name: Power
+        icon: mdi:transmission-tower-import
+        tap_action:
+          action: navigate
+          navigation_path: "/lovelace-panel/1?wp_enabled=true"
+      - type: custom:button-card
+        template: kiosk_navigation
+        variables: { destination: /lovelace-panel/2 }
+        name: Battery
+        icon: mdi:battery
+        tap_action:
+          action: navigate
+          navigation_path: "/lovelace-panel/2?wp_enabled=true"
+      - type: custom:button-card
+        template: kiosk_navigation
+        variables: { destination: /lovelace-panel/3 }
+        name: Heating
+        icon: mdi:radiator
+        tap_action:
+          action: navigate
+          navigation_path: "/lovelace-panel/3?wp_enabled=true"
+      - type: custom:button-card
+        template: kiosk_clock
 
-        ### {{ states.sensor.next_school_days.state.split("|")[0] }}:
-        
-        {{ states.sensor.daniel_lessons_first_day.state }}
-
-        ### {{ states.sensor.next_school_days.state.split("|")[1] }}:
-        
-        {{ states.sensor.daniel_lessons_second_day.state }}
-
-      style: |
-        ha-card {
-        border: none;
-        height: 220px !important;
-        # font-size: 20px;
-        }
-
-    - type: custom:atomic-calendar-revive
-      view_layout:
-        grid-column: 1 / 1
-        grid-row: 5 / span 1  
-      style: |
-        ha-card {
-        height: 285px !important;
-        # font-size: 16px;
-        }
-      entities:
-      - entity: calendar.daniel_schedule
-        allowlist: 'Homework|Test|Deadline'
-      maxDaysToShow: 365
-      showLoader: false
-      showLocation: false
-      showWeekDay: true
-      showProgressBar: false
-      showHours: false
-  #    showRelativeTime: false
-      hideFinishedEvents: true
-      fullDayEventText: ""
-
-################ COLUMN 2 - RORY
-
-  - type: custom:stack-in-card
+  - type: grid
+    columns: 2
+    square: false
     view_layout:
-      grid-column: 2 / 2
-      grid-row: 2 / span 1
+      grid-area: weather
+      show:
+        mediaquery: "(min-width: 801px)"
     cards:
-    - type: markdown
-      content: >-
-        ## Rory
-
-        ### {{ states.sensor.next_school_days.state.split("|")[0] }}:
-
-        {{ states.sensor.rory_lessons_first_day.state }}
-
-        ### {{ states.sensor.next_school_days.state.split("|")[1] }}:
-
-        {{ states.sensor.rory_lessons_second_day.state }}
-
-      style: |
-        ha-card {
-        border: none;
-        height: 220px !important;
-        # font-size: 20px;
-        }
-
-    - type: custom:atomic-calendar-revive
-      view_layout:
-        grid-column: 2 / 2
-        grid-row: 5 / span 1  
-      style: |
-        ha-card {
-        height: 285px !important;
-        # font-size: 16px;
-        }
-      entities:
-      - entity: calendar.rory_schedule
-        name: "Rory's's Deadlines"
-        allowlist: 'Homework|Test|Deadline'
-      maxDaysToShow: 365
-      showLoader: false
-      showLocation: false
-      showWeekDay: true
-      showProgressBar: false
-      showHours: false
-  #    showRelativeTime: false
-      hideFinishedEvents: true
-      fullDayEventText: ""
-
-################ DRIVEWAY LIVE CAM
-
-  - type: picture-entity
-    style: |
-      ha-card {
-      height: 200px !important;
-      }
-    view_layout:
-      grid-column: 3 / 3
-      grid-row: 1 / 1
-    show_state: false
-    show_name: false
-    camera_view: auto
-    entity: camera.front_door_sub
-
-################ COLUMN 3 G&N
-
-  - type: custom:stack-in-card
-    style: |
-      ha-card {
-      border: none;
-      height: 200px !important;
-      }
-    view_layout:
-      grid-column: 3 / 3
-      grid-row: 2 / span 1
-    cards:
-    - type: markdown
-      content: '## Gareth and Nessa'
-      style: |
-        ha-card {
-        border: none;
-        # font-size: 20px;
-        }
-
-    - type: custom:atomic-calendar-revive
-      style: |
-        ha-card {
-        height: 200px !important;
-        border: none;
-        # font-size: 16px;
-        }
-      entities:
-      - entity: calendar.gareth_and_nessa_shared
-      maxDaysToShow: 365
-      showLoader: false
-      showLocation: false
-#      showMonth: true
-      showWeekDay: true
-      showProgressBar: false
-      showHours: false
-  #    showRelativeTime: false
-      hideFinishedEvents: true
-      fullDayEventText: ""
+      - type: weather-forecast
+        entity: weather.forecast_home
+        name: Seven-day outlook
+        show_forecast: true
+        forecast_type: daily
+        secondary_info_attribute: humidity
+      - type: custom:hourly-weather
+        entity: weather.forecast_home
+        name: Next 12 hours
+        num_segments: 12
+        icons: true
+        label_spacing: 3
+        show_precipitation_probability: true
+        show_wind: false
 
   - type: vertical-stack
+    view_layout:
+      grid-area: weather_mobile
+      show:
+        mediaquery: "(max-width: 800px)"
+    cards:
+      - type: weather-forecast
+        entity: weather.forecast_home
+        name: Seven-day outlook
+        show_forecast: true
+        forecast_type: daily
+        secondary_info_attribute: humidity
+      - type: custom:hourly-weather
+        entity: weather.forecast_home
+        name: Next 12 hours
+        num_segments: 12
+        icons: true
+        label_spacing: 3
+        show_precipitation_probability: true
+        show_wind: false
+
+  - type: picture-entity
+    entity: camera.front_door_fluent
+    # This doorbell exposes a 10fps substream; request it explicitly rather
+    # than relying on the slower still-image refresh used by camera_view:auto.
+    camera_view: live
+    show_state: false
+    show_name: false
+    # The Reolink substream is 16:9. A percentage keeps the core card's image
+    # frame proportional at every width, including the single-column mobile
+    # layout, so it shows the whole frame instead of object-fit cropping it.
+    aspect_ratio: 56.25%
+    view_layout:
+      grid-area: camera
     style: |
       ha-card {
-      height: 210px !important;
+        width: 100%;
+        height: auto !important;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+        align-self: start;
       }
+
+  - type: custom:stack-in-card
     view_layout:
-      grid-column: 4 / 4
-      grid-row: 1 / 1 
+      grid-area: rory
     cards:
-    - type: custom:stack-in-card
-      cards:
-      - type: horizontal-stack
+      - type: markdown
+        content: >-
+          ## Rory
+
+          **{{ states('sensor.next_school_days').split('|')[0] }}** — {{ states('sensor.rory_lessons_first_day') }}
+
+          **{{ states('sensor.next_school_days').split('|')[1] }}** — {{ states('sensor.rory_lessons_second_day') }}
+        style: |
+          ha-card { border: none; padding-bottom: 0; }
+      - type: custom:atomic-calendar-revive
+        entities:
+          - entity: calendar.rory_schedule
+            name: Rory deadlines
+            allowlist: 'Homework|Test|Deadline'
+        maxDaysToShow: 90
+        showLoader: false
+        showLocation: false
+        showWeekDay: true
+        showProgressBar: false
+        showHours: false
+        hideFinishedEvents: true
+        fullDayEventText: ""
+        style: |
+          ha-card { border: none; height: 110px !important; overflow-y: auto !important; }
+
+  - type: custom:stack-in-card
+    view_layout:
+      grid-area: calendar
+    style: |
+      ha-card { height: 372px !important; overflow: hidden; }
+    cards:
+      - type: markdown
+        content: "## Gareth and Nessa"
+        style: |
+          ha-card { border: none; height: 38px !important; padding: 8px 12px; }
+      - type: custom:atomic-calendar-revive
+        entities:
+          - entity: calendar.gareth_and_nessa_shared
+        maxDaysToShow: 365
+        showLoader: false
+        showLocation: false
+        showWeekDay: true
+        showProgressBar: false
+        showHours: false
+        hideFinishedEvents: true
+        fullDayEventText: ""
+        style: |
+          ha-card {
+            border: none;
+            height: 334px !important;
+            overflow-x: hidden !important;
+            overflow-y: auto !important;
+          }
+
+  - type: horizontal-stack
+    view_layout:
+      grid-area: household
+    cards:
+      - type: glance
+        columns: 5
+        show_name: false
+        entities:
+          - entity: person.rory_marlow
+            name: RM
+          - entity: person.daniel_marlow
+            name: DM
+          - entity: person.nessa_marlow
+            name: NM
+          - entity: person.gareth_marlow
+            name: GM
+          - entity: device_tracker.blue_shell_location_tracker
+            name: Car
+            image: /local/blue_shell.jpg
+          - entity: sensor.rorys_iphone_battery_level
+          - entity: sensor.sulky_s_phone_battery_level
+          - entity: sensor.vanessas_iphone_battery_level
+          - entity: sensor.gareths_iphone_battery_level
+          - entity: sensor.blue_shell_battery
+      - type: custom:stack-in-card
         cards:
-          - show_name: true
-            show_icon: true
-            type: button
-            icon: mdi:radiator
-            tap_action:
-              action: navigate
-              navigation_path: /lovelace-panel/3?wp_enabled=true
-          - type: button
-            icon: mdi:battery
-            tap_action:
-              action: navigate
-              navigation_path: /lovelace-panel/2?wp_enabled=true
-          - type: button
-            icon: mdi:transmission-tower-import
-            tap_action:
-              action: navigate
-              navigation_path: /lovelace-panel/1?wp_enabled=true
-          - type: button
-            icon: mdi:home
-            tap_action:
-              action: navigate
-              navigation_path: /lovelace-panel/?wp_enabled=true
-    - type: custom:digital-clock
-      style: |
-        ha-card {
-        height: 147px !important;
-        }    
-
-  - type: horizontal-stack
-    view_layout:
-      grid-column: 1 / 1
-      grid-row: 7 / 7 
-    cards:
-    - type: button
-      entity: input_boolean.inhaler_am
-      show_name: false
-    - type: button
-      entity: input_boolean.inhaler_pm
-      show_name: false   
-    - type: button
-      entity: input_number.peak_flow
-      show_name: false   
-
-  - type: horizontal-stack
-    view_layout:
-      grid-column: 2 / 2
-      grid-row: 7 / 7 
-    cards:
-    - type: button
-      entity: input_boolean.feed_tabby
-      show_name: false
-    - type: button
-      entity: input_boolean.dishwasher_am
-      show_name: false
-    - type: button
-      entity: input_boolean.dishwasher_pm
-      show_name: false   
-
-  - type: horizontal-stack
-    view_layout:
-      grid-column: 3 / 3
-      grid-row: 7 / 7 
-    cards:
-    - type: button
-      entity: binary_sensor.blue_shell_charger
-      tap_action: false
-      show_name: false
-    - type: button
-      entity: lock.blue_shell_charge_port_latch
-      tap_action: 
-        action: call-service
-        service: lock.unlock
-        data:
-          entity_id: lock.blue_shell_charge_port_latch
-      show_name: false
-    - type: button
-      entity: switch.blue_shell_climate
-      show_name: false
-      tap_action: 
-        action: toggle
-    - type: button
-      entity: switch.blue_shell_defrost
-      show_name: false
-      icon: "mdi:snowflake-melt"
-      tap_action: 
-        action: toggle
+          - type: horizontal-stack
+            cards:
+              - type: custom:button-card
+                entity: sensor.next_bin_collection
+                show_name: false
+                show_icon: true
+                show_state: false
+                icon: |
+                  [[[
+                    const collection = entity.state.split("|")[1];
+                    if (collection === "Organic") return "mdi:leaf";
+                    if (collection === "Recycle") return "mdi:recycle";
+                    return "mdi:trash-can-outline";
+                  ]]]
+                state:
+                  - color: '#009E73'
+                    operator: template
+                    value: '[[[ return entity.state.split("|")[1] === "Organic" ]]]'
+                  - color: '#0072B2'
+                    operator: template
+                    value: '[[[ return entity.state.split("|")[1] === "Recycle" ]]]'
+              - type: conditional
+                conditions:
+                  - entity: binary_sensor.next_bin_collection_double
+                    state: "on"
+                card:
+                  type: custom:button-card
+                  entity: sensor.next_bin_collection
+                  show_name: false
+                  show_icon: true
+                  show_state: false
+                  icon: |
+                    [[[
+                      const collection = entity.state.split("|")[2];
+                      if (collection === "Organic") return "mdi:leaf";
+                      if (collection === "Recycle") return "mdi:recycle";
+                      return "mdi:trash-can-outline";
+                    ]]]
+                  state:
+                    - color: '#009E73'
+                      operator: template
+                      value: '[[[ return entity.state.split("|")[2] === "Organic" ]]]'
+                    - color: '#0072B2'
+                      operator: template
+                      value: '[[[ return entity.state.split("|")[2] === "Recycle" ]]]'
+          - type: markdown
+            content: "**Bins:** {{ states('sensor.next_bin_collection').split('|')[0] }}"
+            style: |
+              ha-card { border: none; text-align: center; padding: 0 12px 8px; }

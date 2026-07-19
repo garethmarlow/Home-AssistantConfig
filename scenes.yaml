@@ -101,10 +101,9 @@
       - hs
       color_mode: brightness
       brightness: 255
-      effect: None
       entity_id:
       - light.hall_lamp
-      - light.landing_light
+      - light.landing
       - light.top_floor_landing
       icon: mdi:lightbulb-group
       friendly_name: Common Area Lights
@@ -160,7 +159,7 @@
       - hs
       entity_id:
       - light.hall_lamp
-      - light.landing_light
+      - light.landing
       - light.top_floor_landing
       icon: mdi:lightbulb-group
       friendly_name: Common Area Lights
@@ -326,14 +325,13 @@
       - hs
       entity_id:
       - light.hall_lamp
-      - light.landing_light
+      - light.landing
       - light.top_floor_landing
       icon: mdi:lightbulb-group
       friendly_name: Common Area Lights
       supported_features: 44
       color_mode: brightness
       brightness: 102
-      effect: None
       state: 'on'
   icon: mdi:theme-light-dark
   metadata:
@@ -467,14 +465,13 @@
       - hs
       entity_id:
       - light.hall_lamp
-      - light.landing_light
+      - light.landing
       - light.top_floor_landing
       icon: mdi:lightbulb-group
       friendly_name: Common Area Lights
       supported_features: 44
       color_mode: brightness
       brightness: 255
-      effect: None
       state: 'on'
   metadata:
     light.kitchen:
@@ -558,14 +555,13 @@
       - hs
       entity_id:
       - light.hall_lamp
-      - light.landing_light
+      - light.landing
       - light.top_floor_landing
       icon: mdi:lightbulb-group
       friendly_name: Common Area Lights
       supported_features: 44
       color_mode: brightness
       brightness: 26
-      effect: None
       state: 'on'
   metadata:
     light.kitchen:

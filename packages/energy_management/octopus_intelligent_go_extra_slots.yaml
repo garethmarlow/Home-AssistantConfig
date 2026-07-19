@@ -78,13 +78,7 @@ automation:
         entity_id:
           - binary_sensor.octopus_intelligent_go_peak_time_slot
         attribute: end_time
-    condition:
-      - condition: state
-        entity_id: binary_sensor.octopus_power_up_active
-        state: "off"
-      - condition: state
-        entity_id: binary_sensor.octopus_energy_a_acddc775_octoplus_saving_sessions
-        state: "off"
+    condition: []
     variables:
       operating_mode: "{{ states('input_select.energy_automation_mode') }}"
       slot_active: "{{ is_state('binary_sensor.octopus_intelligent_go_peak_time_slot', 'on') }}"

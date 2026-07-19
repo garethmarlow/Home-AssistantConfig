@@ -9,6 +9,12 @@ sensor:
     name: pv1_sum
     unit_time: h
     round: 2
+
+  - platform: integration
+    source: sensor.foxess_pv2_power
+    name: pv2_sum
+    unit_time: h
+    round: 2
     
   - name: battery_cell_imbalance_rolling
     platform: statistics

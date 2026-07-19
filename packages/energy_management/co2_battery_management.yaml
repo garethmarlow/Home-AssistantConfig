@@ -110,6 +110,38 @@ template:
           {{ current_intensity <= max_chargeable_intensity }}
           {% endif %}
 
+  # A server-side schedule for the dashboard. Keeping this calculation in HA
+  # rather than in browser JavaScript makes the charging-plan chart reliable
+  # on the older Kindle WebView as well as desktop clients.
+  - sensor:
+    - name: Battery CO2 Charge Plan
+      unique_id: battery_co2_charge_plan
+      state: >-
+        {% set plan = this.attributes.slots | default('[]', true) | from_json %}
+        {{ plan | count }}
+      attributes:
+        slots: >-
+          {% set forecast = state_attr('sensor.carbon_intensity_uk', 'forecast') | default([], true) %}
+          {% set start_raw = state_attr('binary_sensor.battery_co2_mitigation', 'off_peak_next_start') %}
+          {% set end_raw = state_attr('binary_sensor.battery_co2_mitigation', 'off_peak_next_end') %}
+          {% set start_at = start_raw | as_datetime if start_raw else none %}
+          {% set end_at = end_raw | as_datetime if end_raw else none %}
+          {% set threshold = state_attr('binary_sensor.battery_co2_mitigation', 'max_chargeable_intensity') | float(none) %}
+          {% set current_soc = state_attr('binary_sensor.battery_co2_mitigation', 'current_soc') | float(0) %}
+          {% set target_soc = state_attr('binary_sensor.battery_co2_mitigation', 'target_soc') | float(0) %}
+          {% set ns = namespace(slots=[]) %}
+          {% if start_at and end_at and threshold is not none and current_soc < target_soc %}
+            {% for slot in forecast %}
+              {% set slot_start = slot.get('from') | as_datetime %}
+              {% set slot_end = slot.get('to') | as_datetime if slot.get('to') else slot_start + timedelta(hours=1) %}
+              {% set intensity = slot.get('intensity') | float(none) %}
+              {% if slot_start and intensity is not none and slot_start >= start_at and slot_start < end_at and intensity <= threshold %}
+                {% set ns.slots = ns.slots + [{'start': slot_start.isoformat(), 'end': slot_end.isoformat(), 'intensity': intensity}] %}
+              {% endif %}
+            {% endfor %}
+          {% endif %}
+          {{ ns.slots | tojson }}
+
 automation:
   - alias: CO2 Battery Management
     id: autidco2batterymanagement
